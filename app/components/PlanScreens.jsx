@@ -336,24 +336,32 @@ export function PlanPreviewScreen({ prompt, answers, tuning, initialPlan, onPlan
       </div>
 
       <div style={{ padding: '16px 12px 6px', display: 'flex', gap: 6, overflowX: 'auto' }}>
-        {days.map((d, i) => (
-          <button key={d.day} onClick={() => setDayIdx(i)} style={{
-            flexShrink: 0,
-            padding: '10px 12px', borderRadius: 12,
-            background: dayIdx === i ? 'var(--ink)' : '#fff',
-            color: dayIdx === i ? '#fff' : 'var(--ink-2)',
-            border: 'none', cursor: 'pointer',
-            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
-            minWidth: 46,
-            boxShadow: dayIdx === i ? 'none' : '0 1px 2px rgba(31,36,25,0.05)',
-          }}>
-            <span style={{ fontFamily: 'var(--mono)', fontSize: 9.5, letterSpacing: 0.08, opacity: dayIdx === i ? 0.7 : 0.55 }}>{d.day}</span>
-            <span style={{
-              fontFamily: 'var(--serif)', fontSize: 18, fontStyle: d.kid ? 'italic' : 'normal',
-              color: dayIdx === i ? (d.kid ? 'oklch(88% 0.1 65)' : '#fff') : (d.kid ? 'var(--tangerine)' : 'var(--ink)'),
-            }}>{i + 1}</span>
-          </button>
-        ))}
+        {(() => {
+          const todayIdx = (new Date().getDay() + 6) % 7;
+          return days.map((d, i) => {
+            const isToday = i === todayIdx;
+            const isSelected = dayIdx === i;
+            return (
+              <button key={d.day} onClick={() => setDayIdx(i)} style={{
+                flexShrink: 0,
+                padding: '10px 12px', borderRadius: 12,
+                background: isSelected ? 'var(--ink)' : '#fff',
+                color: isSelected ? '#fff' : 'var(--ink-2)',
+                border: isToday && !isSelected ? '1.5px solid var(--olive)' : 'none',
+                cursor: 'pointer',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+                minWidth: 46,
+                boxShadow: isSelected ? 'none' : '0 1px 2px rgba(31,36,25,0.05)',
+              }}>
+                <span style={{ fontFamily: 'var(--mono)', fontSize: 9.5, letterSpacing: 0.08, opacity: isSelected ? 0.7 : 0.55 }}>{isToday ? 'TODAY' : d.day}</span>
+                <span style={{
+                  fontFamily: 'var(--serif)', fontSize: 18, fontStyle: d.kid ? 'italic' : 'normal',
+                  color: isSelected ? (d.kid ? 'oklch(88% 0.1 65)' : '#fff') : (d.kid ? 'var(--tangerine)' : 'var(--ink)'),
+                }}>{i + 1}</span>
+              </button>
+            );
+          });
+        })()}
       </div>
 
       <div style={{ padding: '6px 16px 4px', display: 'flex', alignItems: 'center', gap: 10 }}>
