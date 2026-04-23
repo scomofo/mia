@@ -1194,10 +1194,18 @@ function ScaleInput({ label, value, onChange, lowLabel, highLabel }) {
   );
 }
 
-export function CheckinScreen({ onBack, onNav }) {
+export function CheckinScreen({ onBack, onNav, plan }) {
+  // Autofill adherence from today's eaten meals (1-5 scale)
+  const todayIdx = (new Date().getDay() + 6) % 7;
+  const todayPlan = plan?.days?.[todayIdx];
+  const eatenRatio = todayPlan?.meals?.length
+    ? todayPlan.meals.filter(m => m.eaten).length / todayPlan.meals.length
+    : 0;
+  const autoAdherence = Math.max(1, Math.round(eatenRatio * 5)) || 3;
+
   const [weight, setWeight] = useState(173);
   const [energy, setEnergy] = useState(3);
-  const [adherence, setAdherence] = useState(4);
+  const [adherence, setAdherence] = useState(autoAdherence);
   const [mood, setMood] = useState('neutral');
   const [note, setNote] = useState('');
   const [saving, setSaving] = useState(false);
