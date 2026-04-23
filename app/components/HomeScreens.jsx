@@ -188,14 +188,15 @@ function BottomNav({ active, onNav }) {
   );
 }
 
-export function Dashboard({ onNav, plan, tuning, onOpenMeal, onRegenerate }) {
+export function Dashboard({ onNav, plan, tuning, answers, onOpenMeal, onRegenerate }) {
   const today = new Date();
   const dayName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][today.getDay()];
   const dateLabel = today.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
 
   const todayIdx = (today.getDay() + 6) % 7;
   const todayPlan = plan?.days?.[todayIdx] || null;
-  const isKidNight = todayPlan ? !!todayPlan.kid : true;
+  const hasKids = answers?.kids && answers.kids !== 'no-kids';
+  const isKidNight = hasKids && todayPlan ? !!todayPlan.kid : false;
   const calTarget = tuning?.cals ?? 2200;
   const consumed = todayPlan
     ? todayPlan.meals.filter(m => m.eaten && m.cal).reduce((s, m) => s + m.cal, 0)
