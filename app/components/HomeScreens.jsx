@@ -1607,7 +1607,30 @@ export function SettingsScreen({ onBack, onNav, onRestart, onRegenerate, onUpdat
             html.setAttribute('data-theme', next);
             try { localStorage.setItem('mia-theme', next); } catch {}
           }} />
-          <SettingRow label="Export plan" chevron onClick={() => {}} />
+          <SettingRow label="Export plan as markdown" chevron onClick={() => {
+            fetch('/api/state').then(r => r.json()).then(s => {
+              if (!s.plan) { alert('No plan yet'); return; }
+              const md = [];
+              md.push(`# Mia — 7-day plan`);
+              if (s.plan.summary) md.push(`_${s.plan.summary}_`);
+              md.push('');
+              md.push(`**Target:** ${s.plan.tuning?.cals ?? '?'} kcal · ${s.plan.tuning?.protein ?? '?'} g protein`);
+              md.push('');
+              s.plan.days.forEach(d => {
+                md.push(`## ${d.day}${d.kid ? ' · kids night' : ''}${d.skipped ? ' · skipped' : ''}`);
+                if (d.note) md.push(`> ${d.note}`);
+                md.push('');
+                d.meals.forEach(m => md.push(`- **${m.t}** — ${m.name}${m.cal ? ` (${m.cal} kcal, ${m.time || '?'} min)` : ''}`));
+                md.push('');
+              });
+              const blob = new Blob([md.join('\n')], { type: 'text/markdown' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url; a.download = `mia-plan-${new Date().toISOString().slice(0,10)}.md`;
+              a.click();
+              URL.revokeObjectURL(url);
+            });
+          }} />
           <SettingRow label="Sign out" tone="muted" chevron onClick={() => {}} />
         </SettingGroup>
       </div>
