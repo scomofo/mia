@@ -97,10 +97,16 @@ After sign-in, your phone can reach the laptop at `https://<hostname>.<tailnet>.
 | `GET /api/state` | Current user answers + active plan |
 | `DELETE /api/state` | Wipe user, plan, grocery list, recipes, check-ins |
 | `POST /api/generate-plan` | Claude → 7-day meal plan; persists `users` + `plans` |
+| `POST /api/regenerate-plan` | Claude → fresh week reusing saved answers + prompt |
+| `POST /api/regenerate-day` | Claude → one day's 4 meals, respects any day note |
 | `GET / POST /api/generate-grocery` | Claude → categorized grocery list; cached per plan |
 | `GET / POST /api/generate-recipe` | Claude → ingredients + steps; cached per (plan, day, idx) |
-| `POST /api/swap-meal` | Claude → replacement meal, same time / calorie band |
+| `POST /api/swap-meal` | Claude → replacement meal (optional reason), same band |
 | `POST /api/mark-eaten` | Toggle a meal's `eaten` flag |
+| `POST /api/toggle-skip-day` | Flip `skipped` on a day (excluded from grocery gen) |
+| `POST /api/update-day-note` | Save a free-text note used by regenerate-day |
+| `POST /api/update-targets` | Patch active plan's calorie / protein targets |
+| `POST /api/update-prefs` | Patch user loves / hates / restrictions |
 | `GET / POST /api/checkin` | Daily weight / energy / adherence / cravings / note |
 
 Every Claude-generating route caches by a stable key — refreshing never re-bills.
