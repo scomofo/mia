@@ -227,7 +227,7 @@ const SAMPLE_DAYS = [
   ]},
 ];
 
-export function PlanPreviewScreen({ prompt, answers, tuning, initialPlan, onPlanReady, onOpenMeal, onRegenerateDay, onUpdateDayNote, onRestart, onBack, onNav }) {
+export function PlanPreviewScreen({ prompt, answers, tuning, initialPlan, onPlanReady, onOpenMeal, onRegenerateDay, onUpdateDayNote, onToggleSkipDay, onRestart, onBack, onNav }) {
   const [shuffling, setShuffling] = useState(false);
   const [noteOpen, setNoteOpen] = useState(false);
   const [noteDraft, setNoteDraft] = useState('');
@@ -378,6 +378,13 @@ export function PlanPreviewScreen({ prompt, answers, tuning, initialPlan, onPlan
           }}>KIDS NIGHT</span>
         )}
         <div style={{ flex: 1 }} />
+        {onToggleSkipDay && !shuffling && (
+          <button onClick={() => onToggleSkipDay(day.day)} style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            fontFamily: 'var(--sans)', fontSize: 12, color: day.skipped ? 'var(--tomato)' : 'var(--ink-3)', fontWeight: 500,
+            padding: '4px 8px',
+          }}>{day.skipped ? '↺ Unskip' : '⊘ Skip'}</button>
+        )}
         {onUpdateDayNote && !shuffling && (
           <button onClick={() => { setNoteDraft(day.note || ''); setNoteOpen(true); }} style={{
             background: 'none', border: 'none', cursor: 'pointer',
@@ -412,7 +419,7 @@ export function PlanPreviewScreen({ prompt, answers, tuning, initialPlan, onPlan
         </div>
       )}
 
-      <div style={{ padding: '10px 16px 120px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div style={{ padding: '10px 16px 120px', display: 'flex', flexDirection: 'column', gap: 8, opacity: day.skipped ? 0.45 : 1 }}>
         {day.meals.map((m, i) => (
           <div key={i}
             onClick={!m.prep && onOpenMeal ? () => onOpenMeal(day.day, i, m) : undefined}

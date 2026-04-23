@@ -78,6 +78,17 @@ export default function MiaApp() {
       return false;
     }
   };
+  const onToggleSkipDay = async (dayKey) => {
+    try {
+      const r = await fetch('/api/toggle-skip-day', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ day: dayKey }),
+      });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const { days } = await r.json();
+      setPlan(p => ({ ...(p || {}), days }));
+    } catch (e) { console.warn('toggle-skip-day failed:', e); }
+  };
   const onUpdateDayNote = async (dayKey, note) => {
     try {
       const r = await fetch('/api/update-day-note', {
@@ -176,6 +187,7 @@ export default function MiaApp() {
           onOpenMeal={onOpenMeal}
           onRegenerateDay={onRegenerateDay}
           onUpdateDayNote={onUpdateDayNote}
+          onToggleSkipDay={onToggleSkipDay}
           onRestart={onRestart}
           onBack={() => setScreen('refine')}
           onNav={onNav}

@@ -46,8 +46,9 @@ export async function POST() {
     .get();
   if (!plan) return NextResponse.json({ error: 'No active plan' }, { status: 400 });
 
-  const days = JSON.parse(plan.daysJson) as Array<{ day: string; meals: Array<{ t: string; name: string }> }>;
+  const days = JSON.parse(plan.daysJson) as Array<{ day: string; skipped?: boolean; meals: Array<{ t: string; name: string }> }>;
   const mealList = days
+    .filter(d => !d.skipped)
     .flatMap(d => d.meals.map(m => `${d.day} ${m.t}: ${m.name}`))
     .join('\n');
 
