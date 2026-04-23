@@ -16,6 +16,19 @@ export default function MiaApp() {
   const [plan, setPlan] = useState(null);
   const [selectedMeal, setSelectedMeal] = useState(null); // { dayKey, idx, meal }
   const [booted, setBooted] = useState(false);
+  const [offline, setOffline] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const sync = () => setOffline(!navigator.onLine);
+    sync();
+    window.addEventListener('online', sync);
+    window.addEventListener('offline', sync);
+    return () => {
+      window.removeEventListener('online', sync);
+      window.removeEventListener('offline', sync);
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -166,6 +179,15 @@ export default function MiaApp() {
 
   return (
     <div className="mia-root">
+      {offline && (
+        <div style={{
+          position: 'absolute', top: 0, left: 0, right: 0, zIndex: 100,
+          background: 'var(--tomato)', color: '#fff',
+          padding: '4px 12px', textAlign: 'center',
+          fontFamily: 'var(--mono)', fontSize: 10.5, letterSpacing: 0.08, textTransform: 'uppercase',
+          fontWeight: 600,
+        }}>Offline — generation unavailable</div>
+      )}
       {screen === 'chat' && (
         <ChatApp onComplete={onChatComplete} answers={answers} setAnswers={setAnswers} />
       )}
