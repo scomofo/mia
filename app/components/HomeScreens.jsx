@@ -256,7 +256,7 @@ export function Dashboard({ onNav, plan, tuning, onOpenMeal, onRegenerate }) {
             <h2 style={{
               margin: '6px 0 0', fontFamily: 'var(--serif)', fontSize: 36,
               fontWeight: 400, letterSpacing: -0.02, lineHeight: 1,
-            }}>Good <em style={{ color: 'var(--olive-deep)' }}>morning</em></h2>
+            }}>Good <em style={{ color: 'var(--olive-deep)' }}>{(() => { const h = today.getHours(); return h < 5 ? 'night' : h < 12 ? 'morning' : h < 17 ? 'afternoon' : h < 21 ? 'evening' : 'night'; })()}</em></h2>
           </div>
           <button onClick={() => onNav('settings')} style={{
             background: '#fff', border: 'none',
