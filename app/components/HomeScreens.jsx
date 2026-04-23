@@ -521,7 +521,19 @@ function ShareTile({ glyph, title, sub, onClick }) {
   );
 }
 
-function SendSheet({ open, onClose, store }) {
+function formatGroceryText(state, estimated) {
+  const lines = ['Grocery list · Mia'];
+  if (estimated) lines.push(`Est: $${estimated.toFixed(2)}`);
+  lines.push('');
+  state?.forEach(cat => {
+    lines.push(`— ${cat.cat} —`);
+    cat.items.forEach(it => lines.push(`  • ${it.name} (${it.qty})${it.offer ? `  [${it.offer.label}]` : ''}`));
+    lines.push('');
+  });
+  return lines.join('\n');
+}
+
+function SendSheet({ open, onClose, store, state, estimated }) {
   if (!open) return null;
   const pcPrimary = store === 'rcss';
   return (
@@ -565,9 +577,21 @@ function SendSheet({ open, onClose, store }) {
         <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--ink-3)', letterSpacing: 0.1, textTransform: 'uppercase', margin: '20px 4px 10px' }}>Or</div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-          <ShareTile glyph="📱" title="Text to self" sub="SMS" onClick={onClose} />
-          <ShareTile glyph="✉️" title="Email" sub="alex@…" onClick={onClose} />
-          <ShareTile glyph="🗒️" title="Apple Notes" sub="Checklist" onClick={onClose} />
+          <ShareTile glyph="📱" title="Share…" sub="iOS / Android" onClick={async () => {
+            const text = formatGroceryText(state, estimated);
+            if (navigator.share) { try { await navigator.share({ title: 'Grocery list', text }); } catch {} }
+            else { try { await navigator.clipboard.writeText(text); alert('Copied to clipboard'); } catch { alert('Could not share'); } }
+            onClose();
+          }} />
+          <ShareTile glyph="✉️" title="Email" sub="opens Mail" onClick={() => {
+            const body = encodeURIComponent(formatGroceryText(state, estimated));
+            location.href = `mailto:?subject=Grocery%20list&body=${body}`;
+            onClose();
+          }} />
+          <ShareTile glyph="🗒️" title="Copy text" sub="to clipboard" onClick={async () => {
+            try { await navigator.clipboard.writeText(formatGroceryText(state, estimated)); alert('Copied'); } catch { alert('Clipboard blocked'); }
+            onClose();
+          }} />
           <ShareTile glyph="🖨️" title="Print" sub="In-store list" onClick={() => window.print()} />
         </div>
 
@@ -823,7 +847,7 @@ export function GroceryScreen({ onBack, onNav }) {
         ))}
       </div>
 
-      <SendSheet open={sendOpen} onClose={() => setSendOpen(false)} store={store} />
+      <SendSheet open={sendOpen} onClose={() => setSendOpen(false)} store={store} state={state} estimated={estimated} />
       <BottomNav active="grocery" onNav={onNav} />
     </div>
   );

@@ -158,7 +158,6 @@ export default function MiaApp() {
         />
       )}
       {screen === 'home' && <Dashboard onNav={onNav} plan={plan} answers={answers} tuning={tuning} onOpenMeal={onOpenMeal} onRegenerate={onRegenerate} />}
-      {/* answers already passed; hasKids derived inside Dashboard */}
       {screen === 'grocery' && <GroceryScreen onBack={() => setScreen('home')} onNav={onNav} />}
       {screen === 'recipe' && <RecipeScreen onBack={() => setScreen('home')} onNav={onNav} selected={selectedMeal} onPlanDaysUpdated={onPlanDaysUpdated} onMealSwapped={onMealSwapped} />}
       {screen === 'checkin' && <CheckinScreen onBack={() => setScreen('home')} onNav={onNav} />}
