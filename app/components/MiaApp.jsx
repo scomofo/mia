@@ -50,6 +50,38 @@ export default function MiaApp() {
   const onPlanReady = (p) => { setPlan(p); };
   const onOpenMeal = (dayKey, idx, meal) => { setSelectedMeal({ dayKey, idx, meal }); setScreen('recipe'); };
   const onPlanDaysUpdated = (days) => { setPlan(p => ({ ...(p || {}), days })); };
+  const onUpdateTargets = async (patch) => {
+    try {
+      const r = await fetch('/api/update-targets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(patch),
+      });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const { tuning: newTuning } = await r.json();
+      setTuning(t => ({ ...t, ...newTuning }));
+      return true;
+    } catch (e) {
+      console.warn('update-targets failed:', e);
+      return false;
+    }
+  };
+  const onRegenerateDay = async (dayKey) => {
+    try {
+      const r = await fetch('/api/regenerate-day', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ day: dayKey }),
+      });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const { days } = await r.json();
+      setPlan(p => ({ ...(p || {}), days }));
+      return true;
+    } catch (e) {
+      console.warn('regenerate-day failed:', e);
+      return false;
+    }
+  };
   const onRegenerate = async () => {
     try {
       const r = await fetch('/api/regenerate-plan', { method: 'POST' });
@@ -105,6 +137,7 @@ export default function MiaApp() {
           initialPlan={plan}
           onPlanReady={onPlanReady}
           onOpenMeal={onOpenMeal}
+          onRegenerateDay={onRegenerateDay}
           onRestart={onRestart}
           onBack={() => setScreen('refine')}
           onNav={onNav}
@@ -114,7 +147,7 @@ export default function MiaApp() {
       {screen === 'grocery' && <GroceryScreen onBack={() => setScreen('home')} onNav={onNav} />}
       {screen === 'recipe' && <RecipeScreen onBack={() => setScreen('home')} onNav={onNav} selected={selectedMeal} onPlanDaysUpdated={onPlanDaysUpdated} onMealSwapped={onMealSwapped} />}
       {screen === 'checkin' && <CheckinScreen onBack={() => setScreen('home')} onNav={onNav} />}
-      {screen === 'settings' && <SettingsScreen onBack={() => setScreen('home')} onNav={onNav} onRestart={onRestart} onRegenerate={onRegenerate} answers={answers} tuning={tuning} prompt={selected} />}
+      {screen === 'settings' && <SettingsScreen onBack={() => setScreen('home')} onNav={onNav} onRestart={onRestart} onRegenerate={onRegenerate} onUpdateTargets={onUpdateTargets} answers={answers} tuning={tuning} prompt={selected} />}
     </div>
   );
 }

@@ -1318,7 +1318,54 @@ const fmtList = (arr, fallback = 'None') => {
   return filtered.map(s => s.charAt(0).toUpperCase() + s.slice(1).replace(/-/g, ' ')).join(', ');
 };
 
-export function SettingsScreen({ onBack, onNav, onRestart, onRegenerate, answers = {}, tuning, prompt }) {
+function TargetEditor({ open, label, unit, min, max, step, value, onSave, onClose }) {
+  const [v, setV] = useState(value);
+  useEffect(() => { setV(value); }, [value, open]);
+  if (!open) return null;
+  return (
+    <div onClick={onClose} style={{
+      position: 'absolute', inset: 0, zIndex: 60,
+      background: 'rgba(31,36,25,0.45)',
+      display: 'flex', alignItems: 'flex-end',
+    }}>
+      <div onClick={e => e.stopPropagation()} style={{
+        width: '100%', background: 'var(--cream)',
+        borderTopLeftRadius: 28, borderTopRightRadius: 28,
+        padding: '10px 20px 36px',
+      }}>
+        <div style={{ width: 36, height: 5, borderRadius: 3, background: 'rgba(31,36,25,0.18)', margin: '6px auto 18px' }} />
+        <div style={{ fontFamily: 'var(--mono)', fontSize: 10.5, color: 'var(--ink-3)', letterSpacing: 0.08, textTransform: 'uppercase' }}>{label}</div>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginTop: 4, marginBottom: 14 }}>
+          <span style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 44, color: 'var(--olive-deep)', lineHeight: 1 }}>{v}</span>
+          <span style={{ fontFamily: 'var(--mono)', fontSize: 13, color: 'var(--ink-3)' }}>{unit}</span>
+        </div>
+        <input type="range" min={min} max={max} step={step} value={v}
+          onChange={e => setV(+e.target.value)}
+          style={{ width: '100%', accentColor: 'var(--olive-deep)' }} />
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--ink-3)', marginBottom: 18 }}>
+          <span>{min}</span><span>{max}</span>
+        </div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button onClick={onClose} style={{
+            flex: 1, background: '#fff', border: '1px solid var(--divider)',
+            borderRadius: 999, padding: '12px',
+            fontFamily: 'var(--sans)', fontSize: 14, fontWeight: 500,
+            color: 'var(--ink-2)', cursor: 'pointer',
+          }}>Cancel</button>
+          <button onClick={() => onSave(v)} style={{
+            flex: 2, background: 'var(--olive-deep)', color: '#fff',
+            border: 'none', borderRadius: 999, padding: '12px',
+            fontFamily: 'var(--sans)', fontSize: 14, fontWeight: 600,
+            cursor: 'pointer',
+          }}>Save</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function SettingsScreen({ onBack, onNav, onRestart, onRegenerate, onUpdateTargets, answers = {}, tuning, prompt }) {
+  const [editor, setEditor] = useState(null); // 'cals' | 'protein' | null
   const hh = HOUSEHOLD_LABEL[answers.household] || '—';
   const pat = PATTERN_LABEL[answers.pattern] || '—';
   const kids = KIDS_LABEL[answers.kids] || '—';
@@ -1368,8 +1415,8 @@ export function SettingsScreen({ onBack, onNav, onRestart, onRegenerate, answers
 
         <SettingGroup title="Plan">
           <SettingRow label="Active prompt" value={prompt?.title || '—'} onClick={() => {}} />
-          <SettingRow label="Calorie target" value={tuning?.cals ? `${tuning.cals.toLocaleString()} kcal` : '—'} onClick={() => {}} />
-          <SettingRow label="Protein target" value={tuning?.protein ? `${tuning.protein} g/day` : '—'} onClick={() => {}} />
+          <SettingRow label="Calorie target" value={tuning?.cals ? `${tuning.cals.toLocaleString()} kcal` : '—'} onClick={() => setEditor('cals')} />
+          <SettingRow label="Protein target" value={tuning?.protein ? `${tuning.protein} g/day` : '—'} onClick={() => setEditor('protein')} />
           <SettingRow label="Generate new week" value="" chevron onClick={async () => { await onRegenerate?.(); onNav?.('home'); }} />
           <SettingRow label="Restart onboarding" value="" chevron onClick={() => onRestart?.()} tone="muted" />
         </SettingGroup>
@@ -1389,6 +1436,24 @@ export function SettingsScreen({ onBack, onNav, onRestart, onRegenerate, answers
         </SettingGroup>
       </div>
       <BottomNav active="settings" onNav={onNav} />
+      <TargetEditor
+        open={editor === 'cals'}
+        label="Daily calories"
+        unit="kcal"
+        min={1400} max={3500} step={50}
+        value={tuning?.cals ?? 2200}
+        onClose={() => setEditor(null)}
+        onSave={async v => { await onUpdateTargets?.({ cals: v }); setEditor(null); }}
+      />
+      <TargetEditor
+        open={editor === 'protein'}
+        label="Daily protein"
+        unit="g"
+        min={80} max={250} step={5}
+        value={tuning?.protein ?? 160}
+        onClose={() => setEditor(null)}
+        onSave={async v => { await onUpdateTargets?.({ protein: v }); setEditor(null); }}
+      />
     </div>
   );
 }

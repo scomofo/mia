@@ -227,7 +227,8 @@ const SAMPLE_DAYS = [
   ]},
 ];
 
-export function PlanPreviewScreen({ prompt, answers, tuning, initialPlan, onPlanReady, onOpenMeal, onRestart, onBack, onNav }) {
+export function PlanPreviewScreen({ prompt, answers, tuning, initialPlan, onPlanReady, onOpenMeal, onRegenerateDay, onRestart, onBack, onNav }) {
+  const [shuffling, setShuffling] = useState(false);
   const [dayIdx, setDayIdx] = useState(0);
   const [liveDays, setLiveDays] = useState(initialPlan?.days ?? null);
   const [status, setStatus] = useState(initialPlan ? 'done' : 'idle');
@@ -367,6 +368,20 @@ export function PlanPreviewScreen({ prompt, answers, tuning, initialPlan, onPlan
           }}>KIDS NIGHT</span>
         )}
         <div style={{ flex: 1 }} />
+        {onRegenerateDay && !shuffling && (
+          <button onClick={async () => {
+            setShuffling(true);
+            await onRegenerateDay(day.day);
+            setShuffling(false);
+          }} style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--olive-deep)', fontWeight: 500,
+            padding: '4px 8px',
+          }}>Shuffle →</button>
+        )}
+        {shuffling && (
+          <span style={{ fontFamily: 'var(--mono)', fontSize: 10.5, color: 'var(--ink-3)' }}>shuffling…</span>
+        )}
         <div style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-3)' }}>{totalCal} kcal</div>
       </div>
 
