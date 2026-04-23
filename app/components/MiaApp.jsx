@@ -103,7 +103,21 @@ export default function MiaApp() {
     setAnswers({}); setRanked([]); setSelected(null); setPlan(null); setScreen('chat');
   };
 
-  if (!booted) return <div className="mia-root" />;
+  if (!booted) return (
+    <div className="mia-root" style={{
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+    }}>
+      <div style={{
+        width: 56, height: 56, borderRadius: '50%',
+        background: 'var(--olive)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 28,
+        color: '#fff',
+        animation: 'fadeIn 300ms ease-out',
+        boxShadow: '0 4px 14px rgba(66,77,34,0.3)',
+      }}>m</div>
+    </div>
+  );
 
   return (
     <div className="mia-root">
