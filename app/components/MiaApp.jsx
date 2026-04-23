@@ -50,6 +50,18 @@ export default function MiaApp() {
   const onPlanReady = (p) => { setPlan(p); };
   const onOpenMeal = (dayKey, idx, meal) => { setSelectedMeal({ dayKey, idx, meal }); setScreen('recipe'); };
   const onPlanDaysUpdated = (days) => { setPlan(p => ({ ...(p || {}), days })); };
+  const onUpdatePrefs = async (patch) => {
+    try {
+      const r = await fetch('/api/update-prefs', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(patch),
+      });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const { answers: a } = await r.json();
+      setAnswers(a);
+      return true;
+    } catch (e) { console.warn('update-prefs failed:', e); return false; }
+  };
   const onUpdateTargets = async (patch) => {
     try {
       const r = await fetch('/api/update-targets', {
@@ -173,7 +185,7 @@ export default function MiaApp() {
       {screen === 'grocery' && <GroceryScreen onBack={() => setScreen('home')} onNav={onNav} />}
       {screen === 'recipe' && <RecipeScreen onBack={() => setScreen('home')} onNav={onNav} selected={selectedMeal} onPlanDaysUpdated={onPlanDaysUpdated} onMealSwapped={onMealSwapped} />}
       {screen === 'checkin' && <CheckinScreen onBack={() => setScreen('home')} onNav={onNav} />}
-      {screen === 'settings' && <SettingsScreen onBack={() => setScreen('home')} onNav={onNav} onRestart={onRestart} onRegenerate={onRegenerate} onUpdateTargets={onUpdateTargets} answers={answers} tuning={tuning} prompt={selected} />}
+      {screen === 'settings' && <SettingsScreen onBack={() => setScreen('home')} onNav={onNav} onRestart={onRestart} onRegenerate={onRegenerate} onUpdateTargets={onUpdateTargets} onUpdatePrefs={onUpdatePrefs} answers={answers} tuning={tuning} prompt={selected} />}
     </div>
   );
 }

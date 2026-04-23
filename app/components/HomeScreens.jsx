@@ -1389,8 +1389,89 @@ function TargetEditor({ open, label, unit, min, max, step, value, onSave, onClos
   );
 }
 
-export function SettingsScreen({ onBack, onNav, onRestart, onRegenerate, onUpdateTargets, answers = {}, tuning, prompt }) {
-  const [editor, setEditor] = useState(null); // 'cals' | 'protein' | null
+const PREF_OPTIONS = {
+  loves: [
+    { id: 'mediterranean', label: 'Mediterranean' }, { id: 'mexican', label: 'Mexican' },
+    { id: 'japanese', label: 'Japanese' }, { id: 'thai', label: 'Thai' },
+    { id: 'indian', label: 'Indian' }, { id: 'italian', label: 'Italian' },
+    { id: 'bbq', label: 'Grill + BBQ' }, { id: 'breakfast', label: 'Breakfast foods' },
+    { id: 'comfort', label: 'Comfort food' }, { id: 'salads', label: 'Big salads' },
+  ],
+  hates: [
+    { id: 'none', label: 'Nothing really' }, { id: 'mushrooms', label: 'Mushrooms' },
+    { id: 'liver', label: 'Organ meats' }, { id: 'cilantro', label: 'Cilantro' },
+    { id: 'tofu', label: 'Tofu' }, { id: 'olives', label: 'Olives' },
+    { id: 'fish', label: 'Fish' }, { id: 'spicy', label: 'Spicy' },
+    { id: 'bitter', label: 'Bitter greens' },
+  ],
+  restrictions: [
+    { id: 'none', label: 'None' }, { id: 'vegetarian', label: 'Vegetarian' },
+    { id: 'pescatarian', label: 'Pescatarian' }, { id: 'gluten-free', label: 'Gluten-free' },
+    { id: 'dairy-free', label: 'Dairy-free' }, { id: 'nut-allergy', label: 'Nut allergy' },
+    { id: 'shellfish', label: 'No shellfish' }, { id: 'halal', label: 'Halal' },
+    { id: 'kosher', label: 'Kosher' }, { id: 'low-fodmap', label: 'Low-FODMAP' },
+  ],
+};
+
+function PrefEditor({ open, field, current, onSave, onClose }) {
+  const [sel, setSel] = useState(current || []);
+  useEffect(() => { setSel(current || []); }, [current, open]);
+  if (!open) return null;
+  const opts = PREF_OPTIONS[field] || [];
+  const titles = { loves: 'Loves', hates: 'Hard nos', restrictions: 'Restrictions' };
+  const toggle = (id) => {
+    if (id === 'none') { setSel(['none']); return; }
+    const next = sel.filter(x => x !== 'none');
+    setSel(next.includes(id) ? next.filter(x => x !== id) : [...next, id]);
+  };
+  return (
+    <div onClick={onClose} style={{
+      position: 'absolute', inset: 0, zIndex: 60,
+      background: 'rgba(31,36,25,0.45)',
+      display: 'flex', alignItems: 'flex-end',
+    }}>
+      <div onClick={e => e.stopPropagation()} style={{
+        width: '100%', background: 'var(--cream)',
+        borderTopLeftRadius: 28, borderTopRightRadius: 28,
+        padding: '10px 20px 36px',
+      }}>
+        <div style={{ width: 36, height: 5, borderRadius: 3, background: 'rgba(31,36,25,0.18)', margin: '6px auto 18px' }} />
+        <div style={{ fontFamily: 'var(--mono)', fontSize: 10.5, color: 'var(--ink-3)', letterSpacing: 0.08, textTransform: 'uppercase', marginBottom: 12 }}>{titles[field]}</div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 }}>
+          {opts.map(o => {
+            const active = sel.includes(o.id);
+            return (
+              <button key={o.id} onClick={() => toggle(o.id)} style={{
+                background: active ? 'var(--olive-deep)' : '#fff',
+                border: active ? '1px solid var(--olive-deep)' : '1px solid rgba(31,36,25,0.12)',
+                borderRadius: 999, padding: '8px 13px',
+                fontFamily: 'var(--sans)', fontSize: 13.5, fontWeight: 500,
+                color: active ? '#fff' : 'var(--ink-2)', cursor: 'pointer',
+              }}>{active && '✓ '}{o.label}</button>
+            );
+          })}
+        </div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button onClick={onClose} style={{
+            flex: 1, background: '#fff', border: '1px solid var(--divider)',
+            borderRadius: 999, padding: '12px',
+            fontFamily: 'var(--sans)', fontSize: 14, fontWeight: 500,
+            color: 'var(--ink-2)', cursor: 'pointer',
+          }}>Cancel</button>
+          <button onClick={() => onSave(sel)} style={{
+            flex: 2, background: 'var(--olive-deep)', color: '#fff',
+            border: 'none', borderRadius: 999, padding: '12px',
+            fontFamily: 'var(--sans)', fontSize: 14, fontWeight: 600,
+            cursor: 'pointer',
+          }}>Save</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function SettingsScreen({ onBack, onNav, onRestart, onRegenerate, onUpdateTargets, onUpdatePrefs, answers = {}, tuning, prompt }) {
+  const [editor, setEditor] = useState(null); // 'cals' | 'protein' | 'loves' | 'hates' | 'restrictions' | null
   const hh = HOUSEHOLD_LABEL[answers.household] || '—';
   const pat = PATTERN_LABEL[answers.pattern] || '—';
   const kids = KIDS_LABEL[answers.kids] || '—';
@@ -1447,9 +1528,9 @@ export function SettingsScreen({ onBack, onNav, onRestart, onRegenerate, onUpdat
         </SettingGroup>
 
         <SettingGroup title="Preferences">
-          <SettingRow label="Loves" value={fmtList(answers.loves, '—')} onClick={() => {}} />
-          <SettingRow label="Hard no" value={fmtList(answers.hates, 'Nothing')} onClick={() => {}} />
-          <SettingRow label="Restrictions" value={fmtList(answers.restrictions, 'None')} onClick={() => {}} />
+          <SettingRow label="Loves" value={fmtList(answers.loves, '—')} onClick={() => setEditor('loves')} />
+          <SettingRow label="Hard no" value={fmtList(answers.hates, 'Nothing')} onClick={() => setEditor('hates')} />
+          <SettingRow label="Restrictions" value={fmtList(answers.restrictions, 'None')} onClick={() => setEditor('restrictions')} />
           <SettingRow label="Budget" value={budget} onClick={() => {}} />
         </SettingGroup>
 
@@ -1478,6 +1559,13 @@ export function SettingsScreen({ onBack, onNav, onRestart, onRegenerate, onUpdat
         value={tuning?.protein ?? 160}
         onClose={() => setEditor(null)}
         onSave={async v => { await onUpdateTargets?.({ protein: v }); setEditor(null); }}
+      />
+      <PrefEditor
+        open={['loves','hates','restrictions'].includes(editor)}
+        field={editor}
+        current={editor ? answers[editor] : []}
+        onClose={() => setEditor(null)}
+        onSave={async vals => { await onUpdatePrefs?.({ [editor]: vals }); setEditor(null); }}
       />
     </div>
   );
