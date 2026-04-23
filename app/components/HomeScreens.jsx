@@ -33,7 +33,8 @@ function ScreenHeader({ title, onBack, right, sticky = true }) {
   );
 }
 
-function MealCard({ t, name, kcal, time, kid, status, onOpen }) {
+function MealCard({ t, name, kcal, time, kid, status, onOpen, onToggleEaten }) {
+  const done = status === 'done';
   return (
     <div onClick={onOpen} style={{
       background: '#fff', borderRadius: 18, padding: 14,
@@ -45,13 +46,18 @@ function MealCard({ t, name, kcal, time, kid, status, onOpen }) {
         position: 'absolute', left: 0, top: 0, bottom: 0, width: 3,
         background: 'var(--olive)',
       }} />}
-      <div style={{
-        width: 46, height: 46, borderRadius: 10,
-        background: status === 'done' ? 'var(--olive-soft)' : 'var(--cream-2)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        flexShrink: 0,
-      }}>
-        {status === 'done' ? (
+      <div
+        onClick={onToggleEaten ? (e) => { e.stopPropagation(); onToggleEaten(); } : undefined}
+        style={{
+          width: 46, height: 46, borderRadius: 10,
+          background: done ? 'var(--olive-soft)' : 'var(--cream-2)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          flexShrink: 0,
+          cursor: onToggleEaten ? 'pointer' : 'default',
+          transition: 'background 150ms',
+        }}
+      >
+        {done ? (
           <svg width="18" height="18" viewBox="0 0 18 18">
             <path d="M4 9l3.5 3.5L14 6" stroke="var(--olive-deep)" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
@@ -188,7 +194,7 @@ function BottomNav({ active, onNav }) {
   );
 }
 
-export function Dashboard({ onNav, plan, tuning, answers, onOpenMeal, onRegenerate }) {
+export function Dashboard({ onNav, plan, tuning, answers, onOpenMeal, onRegenerate, onToggleEaten }) {
   const today = new Date();
   const dayName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][today.getDay()];
   const dateLabel = today.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
@@ -302,6 +308,7 @@ export function Dashboard({ onNav, plan, tuning, answers, onOpenMeal, onRegenera
                   <MealCard
                     key={i}
                     onOpen={() => onOpenMeal?.(todayPlan.day, i, m)}
+                    onToggleEaten={onToggleEaten ? () => onToggleEaten(todayPlan.day, i, !m.eaten) : undefined}
                     t={m.t}
                     name={m.name}
                     kcal={m.cal}
@@ -363,14 +370,28 @@ export function Dashboard({ onNav, plan, tuning, answers, onOpenMeal, onRegenera
               fontFamily: 'var(--serif)', fontSize: 22, fontWeight: 400, letterSpacing: -0.01,
               marginTop: 2, lineHeight: 1.1,
             }}>{toGo} kcal to go</div>
-            <div style={{
-              display: 'flex', gap: 10, marginTop: 10,
-              fontFamily: 'var(--mono)', fontSize: 10.5, color: 'var(--ink-3)',
-            }}>
-              <span><b style={{ color: 'var(--olive-deep)', fontFamily: 'var(--sans)', fontSize: 12 }}>110g</b> protein</span>
-              <span><b style={{ color: 'var(--ink)', fontFamily: 'var(--sans)', fontSize: 12 }}>48g</b> fat</span>
-              <span><b style={{ color: 'var(--ink)', fontFamily: 'var(--sans)', fontSize: 12 }}>145g</b> carbs</span>
-            </div>
+            {tuning?.protein && (
+              <div style={{ marginTop: 10 }}>
+                {(() => {
+                  // crude protein estimate: assume eaten meals hit a proportional share of daily protein target
+                  const eatenCount = todayPlan?.meals.filter(m => m.eaten).length ?? 0;
+                  const totalCount = todayPlan?.meals.length || 4;
+                  const proteinEaten = Math.round((eatenCount / totalCount) * tuning.protein);
+                  const pct = Math.min(100, (proteinEaten / tuning.protein) * 100);
+                  return (
+                    <>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--mono)', fontSize: 10.5, color: 'var(--ink-3)', marginBottom: 4 }}>
+                        <span>Protein</span>
+                        <span><b style={{ color: 'var(--olive-deep)', fontFamily: 'var(--sans)', fontSize: 12 }}>{proteinEaten}g</b> / {tuning.protein}g</span>
+                      </div>
+                      <div style={{ height: 4, borderRadius: 999, background: 'rgba(31,36,25,0.08)', overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: `${pct}%`, background: 'var(--olive)' }} />
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+            )}
           </div>
         </div>
       </div>

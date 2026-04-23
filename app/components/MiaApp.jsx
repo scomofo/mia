@@ -100,6 +100,17 @@ export default function MiaApp() {
       setPlan(p => ({ ...(p || {}), days }));
     } catch (e) { console.warn('update-day-note failed:', e); }
   };
+  const onToggleEaten = async (dayKey, idx, eaten) => {
+    try {
+      const r = await fetch('/api/mark-eaten', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ day: dayKey, idx, eaten }),
+      });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const { days } = await r.json();
+      setPlan(p => ({ ...(p || {}), days }));
+    } catch (e) { console.warn('toggle-eaten failed:', e); }
+  };
   const onRegenerateDay = async (dayKey) => {
     try {
       const r = await fetch('/api/regenerate-day', {
@@ -193,7 +204,7 @@ export default function MiaApp() {
           onNav={onNav}
         />
       )}
-      {screen === 'home' && <Dashboard onNav={onNav} plan={plan} answers={answers} tuning={tuning} onOpenMeal={onOpenMeal} onRegenerate={onRegenerate} />}
+      {screen === 'home' && <Dashboard onNav={onNav} plan={plan} answers={answers} tuning={tuning} onOpenMeal={onOpenMeal} onRegenerate={onRegenerate} onToggleEaten={onToggleEaten} />}
       {screen === 'grocery' && <GroceryScreen onBack={() => setScreen('home')} onNav={onNav} />}
       {screen === 'recipe' && <RecipeScreen onBack={() => setScreen('home')} onNav={onNav} selected={selectedMeal} onPlanDaysUpdated={onPlanDaysUpdated} onMealSwapped={onMealSwapped} />}
       {screen === 'checkin' && <CheckinScreen onBack={() => setScreen('home')} onNav={onNav} />}
