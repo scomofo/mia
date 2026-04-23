@@ -78,6 +78,18 @@ node scripts/seed-plan.mjs
 
 Seeds a plan so you can jump straight into dashboard/grocery/recipe work.
 
+### Access from your phone
+
+Mia binds to `0.0.0.0` so any device on your LAN can reach it. On the laptop, run `ipconfig` and point your phone at `http://<laptop-ip>:3000`.
+
+For a nicer cross-network setup (works on cell data, stable hostname, optional HTTPS for real PWA install), a one-shot Tailscale script is provided:
+
+```powershell
+pwsh -File scripts/setup-tailscale.ps1 -Funnel
+```
+
+After sign-in, your phone can reach the laptop at `https://<hostname>.<tailnet>.ts.net` from anywhere. Install Tailscale on the phone too and sign in with the same account.
+
 ## Routes
 
 | Route | Purpose |
