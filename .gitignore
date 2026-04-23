@@ -1,0 +1,36 @@
+# Dependencies
+**/node_modules/
+
+# Build output
+**/.next/
+**/out/
+**/build/
+**/.vercel
+
+# Env files
+**/.env
+**/.env.*
+!**/.env.example
+
+# App data (SQLite)
+**/data/*.db
+**/data/*.db-*
+
+# TypeScript
+**/*.tsbuildinfo
+**/next-env.d.ts
+
+# Claude local config (may contain workspace-specific paths)
+**/.claude/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor
+.vscode/
+.idea/

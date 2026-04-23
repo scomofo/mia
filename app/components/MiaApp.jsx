@@ -1,0 +1,108 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import ChatApp from './ChatApp';
+import { PromptSelectScreen, BrowseAllScreen } from './PromptSelect';
+import { RefineScreen, PlanPreviewScreen } from './PlanScreens';
+import { Dashboard, GroceryScreen, RecipeScreen, CheckinScreen, SettingsScreen } from './HomeScreens';
+import { PROMPTS } from './data/prompts';
+
+export default function MiaApp() {
+  const [screen, setScreen] = useState('chat');
+  const [answers, setAnswers] = useState({});
+  const [ranked, setRanked] = useState([]);
+  const [selected, setSelected] = useState(null);
+  const [tuning, setTuning] = useState({ cals: 2200, protein: 160 });
+  const [plan, setPlan] = useState(null);
+  const [selectedMeal, setSelectedMeal] = useState(null); // { dayKey, idx, meal }
+  const [booted, setBooted] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function boot() {
+      try {
+        const res = await fetch('/api/state');
+        if (!res.ok) throw new Error(`state ${res.status}`);
+        const { answers: a, plan: p } = await res.json();
+        if (cancelled) return;
+        if (p && a) {
+          setAnswers(a);
+          setPlan({ summary: p.summary, days: p.days });
+          if (p.tuning) setTuning({ cals: p.tuning.cals ?? 2200, protein: p.tuning.protein ?? 160 });
+          const prompt = PROMPTS.find(pr => pr.id === p.promptId);
+          if (prompt) setSelected(prompt);
+          setScreen('home');
+        }
+      } catch (e) {
+        console.warn('boot: state fetch failed', e);
+      } finally {
+        if (!cancelled) setBooted(true);
+      }
+    }
+    boot();
+    return () => { cancelled = true; };
+  }, []);
+
+  const onChatComplete = (r) => { setRanked(r); setScreen('select'); };
+  const onPick = (p) => { setSelected(p); setScreen('refine'); };
+  const onGenerate = (t) => { setTuning(t); setScreen('plan'); };
+  const onNav = (s) => setScreen(s);
+  const onPlanReady = (p) => { setPlan(p); };
+  const onOpenMeal = (dayKey, idx, meal) => { setSelectedMeal({ dayKey, idx, meal }); setScreen('recipe'); };
+  const onPlanDaysUpdated = (days) => { setPlan(p => ({ ...(p || {}), days })); };
+  const onMealSwapped = (dayKey, idx, meal, days) => {
+    setPlan(p => ({ ...(p || {}), days }));
+    setSelectedMeal({ dayKey, idx, meal });
+  };
+  const onRestart = async () => {
+    try { await fetch('/api/state', { method: 'DELETE' }); } catch {}
+    setAnswers({}); setRanked([]); setSelected(null); setPlan(null); setScreen('chat');
+  };
+
+  if (!booted) return <div className="mia-root" />;
+
+  return (
+    <div className="mia-root">
+      {screen === 'chat' && (
+        <ChatApp onComplete={onChatComplete} answers={answers} setAnswers={setAnswers} />
+      )}
+      {screen === 'select' && (
+        <PromptSelectScreen
+          ranked={ranked}
+          onPick={onPick}
+          onBrowseAll={() => setScreen('browse')}
+          onBack={() => setScreen('chat')}
+        />
+      )}
+      {screen === 'browse' && (
+        <BrowseAllScreen ranked={ranked} onPick={onPick} onBack={() => setScreen('select')} />
+      )}
+      {screen === 'refine' && selected && (
+        <RefineScreen
+          prompt={selected}
+          answers={answers}
+          onGenerate={onGenerate}
+          onBack={() => setScreen('select')}
+        />
+      )}
+      {screen === 'plan' && selected && (
+        <PlanPreviewScreen
+          prompt={selected}
+          answers={answers}
+          tuning={tuning}
+          initialPlan={plan}
+          onPlanReady={onPlanReady}
+          onOpenMeal={onOpenMeal}
+          onRestart={onRestart}
+          onBack={() => setScreen('refine')}
+          onNav={onNav}
+        />
+      )}
+      {screen === 'home' && <Dashboard onNav={onNav} plan={plan} answers={answers} tuning={tuning} onOpenMeal={onOpenMeal} />}
+      {screen === 'grocery' && <GroceryScreen onBack={() => setScreen('home')} onNav={onNav} />}
+      {screen === 'recipe' && <RecipeScreen onBack={() => setScreen('home')} onNav={onNav} selected={selectedMeal} onPlanDaysUpdated={onPlanDaysUpdated} onMealSwapped={onMealSwapped} />}
+      {screen === 'checkin' && <CheckinScreen onBack={() => setScreen('home')} onNav={onNav} />}
+      {screen === 'settings' && <SettingsScreen onBack={() => setScreen('home')} onNav={onNav} onRestart={onRestart} answers={answers} tuning={tuning} prompt={selected} />}
+    </div>
+  );
+}

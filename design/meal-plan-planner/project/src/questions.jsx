@@ -1,0 +1,106 @@
+// questions.jsx — onboarding question flow
+
+const QUESTIONS = [
+  {
+    id: 'goal',
+    label: 'First things first',
+    question: 'What are you trying to achieve?',
+    hint: 'Pick the one that\u2019s most true right now.',
+    type: 'single',
+    options: [
+      { id: 'lose-fat', label: 'Lose fat', sub: 'Drop body fat, look leaner' },
+      { id: 'build-muscle', label: 'Build muscle', sub: 'Get stronger, add mass' },
+      { id: 'maintain', label: 'Maintain', sub: 'Stay where I am, eat better' },
+      { id: 'energy', label: 'More energy', sub: 'Stop the 3pm crash' },
+      { id: 'health', label: 'Fix a health issue', sub: 'Digestion, labs, condition' },
+      { id: 'family', label: 'Feed my family well', sub: 'Kids at the table' },
+    ],
+  },
+  {
+    id: 'profile',
+    label: 'About you',
+    question: 'A few numbers so the math checks out.',
+    hint: 'Optional \u2014 skip any you don\u2019t want to share.',
+    type: 'profile',
+  },
+  {
+    id: 'activity',
+    label: 'Movement',
+    question: 'How active are you on a normal week?',
+    type: 'single',
+    options: [
+      { id: 'sedentary', label: 'Sedentary', sub: 'Desk job, little exercise' },
+      { id: 'light', label: 'Lightly active', sub: '1-2 workouts per week' },
+      { id: 'moderate', label: 'Moderately active', sub: '3-4 workouts per week' },
+      { id: 'very', label: 'Very active', sub: '5+ workouts, physical job' },
+      { id: 'athletic', label: 'Athletic', sub: 'Training 6+ days, competitive' },
+    ],
+  },
+  {
+    id: 'cooking',
+    label: 'Kitchen reality',
+    question: 'How much cooking are you willing to do?',
+    type: 'single',
+    options: [
+      { id: 'none', label: 'Almost none', sub: 'Assembly, not cooking' },
+      { id: 'weeknight', label: '20-30 min weeknights', sub: 'Simple stovetop' },
+      { id: 'prep', label: 'Sunday prep sessions', sub: 'Batch cook the week' },
+      { id: 'daily', label: 'I enjoy cooking daily', sub: 'Recipes welcome' },
+    ],
+  },
+  {
+    id: 'time',
+    label: 'Time budget',
+    question: 'Minutes per day for food, on average?',
+    type: 'slider',
+    min: 10, max: 90, step: 5, default: 40,
+    unit: 'min',
+  },
+  {
+    id: 'restrictions',
+    label: 'What\u2019s off the table',
+    question: 'Any restrictions or allergies?',
+    hint: 'Select all that apply.',
+    type: 'multi',
+    options: [
+      { id: 'none', label: 'None' },
+      { id: 'vegetarian', label: 'Vegetarian' },
+      { id: 'vegan', label: 'Vegan' },
+      { id: 'gluten-free', label: 'Gluten-free' },
+      { id: 'dairy-free', label: 'Dairy-free' },
+      { id: 'nut-allergy', label: 'Nut allergy' },
+      { id: 'shellfish', label: 'No shellfish' },
+      { id: 'halal', label: 'Halal' },
+      { id: 'kosher', label: 'Kosher' },
+    ],
+  },
+  {
+    id: 'pain',
+    label: 'The hard part',
+    question: 'Where do your nutrition efforts usually fall apart?',
+    hint: 'Pick up to two.',
+    type: 'multi',
+    max: 2,
+    options: [
+      { id: 'planning', label: 'Planning the week', sub: 'I just don\u2019t plan' },
+      { id: 'grocery', label: 'Grocery shopping', sub: 'Decision fatigue at the store' },
+      { id: 'cooking', label: 'Weeknight cooking', sub: 'Tired, Uber Eats wins' },
+      { id: 'snacking', label: 'Evening snacking', sub: '9pm pantry runs' },
+      { id: 'social', label: 'Eating out / social', sub: 'Plans fall apart at dinner' },
+      { id: 'tracking', label: 'Tracking macros', sub: 'I start strong, stop by day 3' },
+    ],
+  },
+  {
+    id: 'depth',
+    label: 'How structured',
+    question: 'How structured do you want this plan to be?',
+    type: 'single',
+    options: [
+      { id: 'light', label: 'Light touch', sub: 'Guidelines + flexibility' },
+      { id: 'balanced', label: 'Balanced', sub: 'Framework with room to move' },
+      { id: 'precise', label: 'Precise', sub: 'Gram-level targets, every meal' },
+    ],
+  },
+];
+
+window.QUESTIONS = QUESTIONS;

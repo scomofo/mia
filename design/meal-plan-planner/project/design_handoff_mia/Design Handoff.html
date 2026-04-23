@@ -1,0 +1,852 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Mia · Design Handoff</title>
+<style>
+  :root {
+    --cream: #f6eed4;
+    --cream-2: #ece6d6;
+    --ink: #1a1a17;
+    --ink-2: #55534b;
+    --muted: #8a877b;
+    --line: #d9d2b9;
+    --line-2: #e7e0c6;
+    --olive: #4a5228;
+    --olive-ink: #2a3015;
+    --apricot: #f3b874;
+    --card: #fbf6e3;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Menlo", monospace;
+    --serif: "Source Serif 4", "Source Serif Pro", "Iowan Old Style", "Georgia", serif;
+  }
+
+  @font-face {
+    font-family: "Source Serif 4";
+    src: local("Source Serif 4"), local("Source Serif Pro");
+    font-display: swap;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    background: var(--cream);
+    color: var(--ink);
+    font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--olive); text-decoration: none; border-bottom: 1px solid color-mix(in oklab, var(--olive) 30%, transparent); }
+  a:hover { border-bottom-color: var(--olive); }
+
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 64px 40px 120px; }
+
+  /* ———— MASTHEAD ———— */
+  .masthead {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    gap: 40px;
+    padding-bottom: 28px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 48px;
+  }
+  .eyebrow {
+    font: 500 11px/1 var(--mono);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--olive);
+    margin-bottom: 18px;
+  }
+  h1 {
+    font: 400 68px/0.96 var(--serif);
+    letter-spacing: -0.02em;
+    margin: 0 0 14px;
+  }
+  h1 em { font-style: italic; color: var(--olive); font-weight: 400; }
+  .tagline {
+    font: 400 18px/1.5 var(--serif);
+    color: var(--ink-2);
+    max-width: 560px;
+    margin: 0;
+    font-style: italic;
+  }
+  .masthead-meta {
+    text-align: right;
+    font: 11px/1.7 var(--mono);
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .masthead-meta b { color: var(--ink); font-weight: 500; }
+
+  /* ———— CONTENTS RAIL ———— */
+  .contents {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    margin-bottom: 72px;
+    border: 1px solid var(--line);
+    background: color-mix(in oklab, var(--cream) 50%, white);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .contents a {
+    display: block;
+    padding: 18px 20px;
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    border-bottom: none;
+    color: var(--ink);
+    border-bottom: 0;
+    font-weight: 500;
+    font-size: 14px;
+  }
+  .contents a:nth-child(4n) { border-right: none; }
+  .contents a:hover { background: var(--cream); }
+  .contents .num {
+    font: 400 11px/1 var(--mono);
+    color: var(--muted);
+    display: block;
+    margin-bottom: 6px;
+    letter-spacing: 0.1em;
+  }
+
+  /* ———— SECTIONS ———— */
+  section { margin-bottom: 88px; scroll-margin-top: 24px; }
+  h2 {
+    font: 400 42px/1 var(--serif);
+    letter-spacing: -0.015em;
+    margin: 0 0 8px;
+  }
+  h2 em { font-style: italic; color: var(--olive); font-weight: 400; }
+  .sec-sub {
+    font: 14px/1.5 var(--mono);
+    color: var(--muted);
+    margin: 0 0 32px;
+    letter-spacing: 0.02em;
+  }
+
+  /* ———— SCREEN GRID ———— */
+  .screens {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 32px 28px;
+  }
+  .screen {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .screen-frame {
+    background: var(--cream-2);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 14px;
+    overflow: hidden;
+    aspect-ratio: 260 / 362;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .screen-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center top;
+    display: block;
+    border-radius: 10px;
+  }
+  .screen-idx {
+    position: absolute;
+    top: 12px;
+    left: 14px;
+    font: 500 10px/1 var(--mono);
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    background: color-mix(in oklab, var(--cream) 70%, white);
+    padding: 5px 8px;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+  }
+  .screen-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .screen-name {
+    font: 500 17px/1.2 var(--serif);
+    letter-spacing: -0.005em;
+    margin: 0;
+  }
+  .screen-name em { font-style: italic; color: var(--olive); }
+  .screen-src {
+    font: 10px/1 var(--mono);
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .screen-desc {
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: var(--ink-2);
+    margin: 0;
+  }
+  .screen-notes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 2px;
+  }
+  .tag {
+    font: 500 10px/1 var(--mono);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 5px 8px;
+    border-radius: 5px;
+    background: color-mix(in oklab, var(--olive) 10%, var(--cream));
+    color: var(--olive-ink);
+    border: 1px solid color-mix(in oklab, var(--olive) 20%, transparent);
+  }
+  .tag.warn {
+    background: color-mix(in oklab, var(--apricot) 25%, var(--cream));
+    color: #6b3a10;
+    border-color: color-mix(in oklab, var(--apricot) 50%, transparent);
+  }
+
+  /* ———— TOKENS ———— */
+  .tokens {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 28px;
+  }
+  .token-group {
+    grid-column: span 6;
+    border: 1px solid var(--line);
+    background: color-mix(in oklab, var(--cream) 50%, white);
+    border-radius: 14px;
+    padding: 28px;
+  }
+  .token-group h3 {
+    margin: 0 0 18px;
+    font: 500 13px/1 var(--mono);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .swatches {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+  .swatch {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .swatch-chip {
+    aspect-ratio: 1.3;
+    border-radius: 10px;
+    border: 1px solid color-mix(in oklab, currentColor 15%, transparent);
+  }
+  .swatch-name { font: 500 13px/1.2 var(--serif); }
+  .swatch-val { font: 10px/1.3 var(--mono); color: var(--muted); letter-spacing: 0.02em; }
+
+  .type-row {
+    display: grid;
+    grid-template-columns: 90px 1fr;
+    gap: 18px;
+    align-items: baseline;
+    padding: 14px 0;
+    border-top: 1px dashed var(--line);
+  }
+  .type-row:first-of-type { border-top: 0; padding-top: 0; }
+  .type-meta { font: 10px/1.4 var(--mono); color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
+  .type-sample { font-family: var(--serif); color: var(--ink); line-height: 1.1; }
+  .type-sample.mono { font-family: var(--mono); letter-spacing: 0.04em; }
+  .type-sample.sans { font-family: -apple-system, "Inter", sans-serif; line-height: 1.4; }
+
+  .spacing-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 14px;
+    margin-top: 8px;
+  }
+  .space-item { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+  .space-box { background: var(--olive); border-radius: 3px; }
+  .space-lbl { font: 10px/1 var(--mono); color: var(--muted); letter-spacing: 0.06em; }
+
+  /* ———— FLOW DIAGRAM ———— */
+  .flow {
+    border: 1px solid var(--line);
+    background: color-mix(in oklab, var(--cream) 50%, white);
+    border-radius: 14px;
+    padding: 40px 32px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font: 500 13px/1 var(--mono);
+  }
+  .flow-node {
+    padding: 12px 16px;
+    background: var(--cream);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    letter-spacing: 0.02em;
+  }
+  .flow-node.hero {
+    background: var(--olive);
+    color: var(--cream);
+    border-color: var(--olive);
+  }
+  .flow-arrow { color: var(--muted); font-size: 16px; }
+
+  /* ———— INTERACTIONS LIST ———— */
+  .interactions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+    background: color-mix(in oklab, var(--cream) 50%, white);
+  }
+  .interaction {
+    padding: 22px 26px;
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .interaction:nth-child(2n) { border-right: none; }
+  .interaction:nth-last-child(-n+2) { border-bottom: none; }
+  .interaction h4 {
+    margin: 0 0 6px;
+    font: 500 15px/1.2 var(--serif);
+    letter-spacing: -0.005em;
+  }
+  .interaction p { margin: 0; font-size: 13px; line-height: 1.5; color: var(--ink-2); }
+  .interaction .kbd {
+    display: inline-block;
+    padding: 2px 7px;
+    font: 500 11px/1.3 var(--mono);
+    background: var(--cream);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    margin-right: 4px;
+  }
+
+  /* ———— ENGINEERING POINTERS ———— */
+  .eng {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 28px;
+  }
+  .eng-col h3 {
+    margin: 0 0 14px;
+    font: 500 13px/1 var(--mono);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .eng-list { list-style: none; padding: 0; margin: 0; }
+  .eng-list li {
+    padding: 10px 0;
+    border-top: 1px dashed var(--line);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    align-items: baseline;
+  }
+  .eng-list li:first-child { border-top: 0; padding-top: 0; }
+  .eng-list .name { font: 500 14px var(--serif); }
+  .eng-list .path { font: 11px var(--mono); color: var(--muted); }
+
+  .stack-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+  }
+  .stack-table th, .stack-table td {
+    text-align: left;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--line);
+  }
+  .stack-table th {
+    font: 500 10px/1 var(--mono);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding-top: 0;
+  }
+  .stack-table td:first-child { font-weight: 500; width: 180px; }
+  .stack-table td .code { font: 12px var(--mono); background: var(--cream); padding: 2px 6px; border-radius: 4px; color: var(--olive-ink); }
+
+  /* ———— COLOPHON ———— */
+  .colophon {
+    margin-top: 96px;
+    padding-top: 32px;
+    border-top: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: start;
+    gap: 40px;
+    color: var(--muted);
+    font: 12px/1.6 var(--mono);
+    letter-spacing: 0.02em;
+  }
+  .colophon b { color: var(--ink); font-weight: 500; }
+  .colophon .files {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    gap: 4px 24px;
+    text-align: right;
+  }
+
+  /* ———— RESPONSIVE ———— */
+  @media (max-width: 900px) {
+    .wrap { padding: 40px 24px 80px; }
+    h1 { font-size: 48px; }
+    .masthead { grid-template-columns: 1fr; }
+    .masthead-meta { text-align: left; }
+    .contents { grid-template-columns: repeat(2, 1fr); }
+    .contents a:nth-child(4n) { border-right: 1px solid var(--line); }
+    .contents a:nth-child(2n) { border-right: none; }
+    .token-group { grid-column: span 12; }
+    .interactions { grid-template-columns: 1fr; }
+    .interaction { border-right: none; }
+    .eng { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <!-- MASTHEAD -->
+  <header class="masthead">
+    <div>
+      <div class="eyebrow">Design handoff · v1.0 · prototype complete</div>
+      <h1>Mia — <em>pocket dietitian</em></h1>
+      <p class="tagline">A 15-question chat, a matched expert playbook, and a 7-day meal plan that actually fits your week.</p>
+    </div>
+    <div class="masthead-meta">
+      Platform · <b>iOS 17+</b><br/>
+      Canvas · <b>402 × 874</b><br/>
+      Screens · <b>10</b><br/>
+      Fidelity · <b>hi-fi / final</b>
+    </div>
+  </header>
+
+  <!-- CONTENTS -->
+  <nav class="contents">
+    <a href="#overview"><span class="num">§01</span>Overview & flow</a>
+    <a href="#screens"><span class="num">§02</span>Screens (10)</a>
+    <a href="#tokens"><span class="num">§03</span>Design tokens</a>
+    <a href="#interactions"><span class="num">§04</span>Interaction notes</a>
+    <a href="#engineering"><span class="num">§05</span>Engineering pointers</a>
+    <a href="mia.html"><span class="num">→</span>Open live prototype</a>
+    <a href="HANDOFF.md"><span class="num">→</span>Build document (md)</a>
+    <a href="README.md"><span class="num">→</span>README</a>
+  </nav>
+
+  <!-- §01 OVERVIEW -->
+  <section id="overview">
+    <h2>The <em>core loop</em></h2>
+    <p class="sec-sub">§01 · one-time onboarding (01 → 04) then daily reuse (05 → 08 → back to 05)</p>
+
+    <div class="flow">
+      <div class="flow-node hero">Chat</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-node">Match</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-node">Refine</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-node hero">Generate plan</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-node">Home</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-node">Grocery</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-node">Cook</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-node">Check-in</div>
+      <span class="flow-arrow">↺</span>
+    </div>
+  </section>
+
+  <!-- §02 SCREENS -->
+  <section id="screens">
+    <h2>Ten <em>screens</em>, one app</h2>
+    <p class="sec-sub">§02 · captured from the live prototype at 1× · tap any tile to open <code>mia.html</code> on that screen</p>
+
+    <div class="screens">
+
+      <figure class="screen">
+        <a class="screen-frame" href="mia.html#chat">
+          <span class="screen-idx">01</span>
+          <img src="screenshots/01-chat.png" alt="Chat onboarding" />
+        </a>
+        <div class="screen-head">
+          <h3 class="screen-name">Chat <em>onboarding</em></h3>
+          <span class="screen-src">src/chat-ui.jsx<br/>src/chat-flow.jsx</span>
+        </div>
+        <p class="screen-desc">15-turn conversation with Mia. Mix of chip answers, sliders, freeform. Progress shown as <code>N/17</code>.</p>
+        <div class="screen-notes">
+          <span class="tag">imessage-style</span>
+          <span class="tag">typing indicator</span>
+        </div>
+      </figure>
+
+      <figure class="screen">
+        <a class="screen-frame" href="mia.html#select">
+          <span class="screen-idx">02</span>
+          <img src="screenshots/02-select.png" alt="Prompt select" />
+        </a>
+        <div class="screen-head">
+          <h3 class="screen-name">Ranked <em>match</em></h3>
+          <span class="screen-src">src/prompt-select.jsx</span>
+        </div>
+        <p class="screen-desc">Best-fit hero card + 2 runners-up. Fit score as progress bar. "Browse all" opens full catalog.</p>
+        <div class="screen-notes">
+          <span class="tag">hero card</span>
+          <span class="tag">fit meter</span>
+        </div>
+      </figure>
+
+      <figure class="screen">
+        <a class="screen-frame" href="mia.html#browse">
+          <span class="screen-idx">03</span>
+          <img src="screenshots/03-browse.png" alt="Browse all prompts" />
+        </a>
+        <div class="screen-head">
+          <h3 class="screen-name">Browse <em>all</em></h3>
+          <span class="screen-src">src/prompt-select.jsx</span>
+        </div>
+        <p class="screen-desc">Full 12-prompt catalog, still fit-ranked. Each row: icon, name, tagline, fit score.</p>
+        <div class="screen-notes">
+          <span class="tag">list</span>
+          <span class="tag">12 prompts</span>
+        </div>
+      </figure>
+
+      <figure class="screen">
+        <a class="screen-frame" href="mia.html#refine">
+          <span class="screen-idx">04</span>
+          <img src="screenshots/04-refine.png" alt="Refine targets" />
+        </a>
+        <div class="screen-head">
+          <h3 class="screen-name">Fine-tune <em>targets</em></h3>
+          <span class="screen-src">src/plan-screen.jsx</span>
+        </div>
+        <p class="screen-desc">Adjust kcal / protein / meals before generate. Profile summary shown as read-only chips.</p>
+        <div class="screen-notes">
+          <span class="tag">sliders</span>
+          <span class="tag">last step</span>
+        </div>
+      </figure>
+
+      <figure class="screen">
+        <a class="screen-frame" href="mia.html#plan">
+          <span class="screen-idx">05</span>
+          <img src="screenshots/05-plan.png" alt="7-day plan" />
+        </a>
+        <div class="screen-head">
+          <h3 class="screen-name">Your <em>7-day plan</em></h3>
+          <span class="screen-src">src/plan-screen.jsx</span>
+        </div>
+        <p class="screen-desc">Live LLM call. Hero header with macros. Day pills (1–7). Meals listed per day. "Mia is cooking up your week…" while streaming.</p>
+        <div class="screen-notes">
+          <span class="tag">streaming</span>
+          <span class="tag">first payoff</span>
+        </div>
+      </figure>
+
+      <figure class="screen">
+        <a class="screen-frame" href="mia.html#home">
+          <span class="screen-idx">06</span>
+          <img src="screenshots/06-home.png" alt="Home dashboard" />
+        </a>
+        <div class="screen-head">
+          <h3 class="screen-name">Home <em>dashboard</em></h3>
+          <span class="screen-src">src/home-screens.jsx</span>
+        </div>
+        <p class="screen-desc">Day N of 7. "Good morning/afternoon/evening". Today's meals with NEXT badge, macro ring, quick tiles.</p>
+        <div class="screen-notes">
+          <span class="tag">daily reuse</span>
+          <span class="tag">time-aware</span>
+        </div>
+      </figure>
+
+      <figure class="screen">
+        <a class="screen-frame" href="mia.html#grocery">
+          <span class="screen-idx">07</span>
+          <img src="screenshots/07-grocery.png" alt="Grocery list" />
+        </a>
+        <div class="screen-head">
+          <h3 class="screen-name">Grocery <em>list</em></h3>
+          <span class="screen-src">src/home-screens.jsx</span>
+        </div>
+        <p class="screen-desc">Store picker (RCSS / Co-op). Loyalty strip: PC Optimum pts + Co-op equity. Per-item offer pills. Send sheet.</p>
+        <div class="screen-notes">
+          <span class="tag">canadian</span>
+          <span class="tag warn">PC Optimum</span>
+          <span class="tag warn">Co-op</span>
+        </div>
+      </figure>
+
+      <figure class="screen">
+        <a class="screen-frame" href="mia.html#recipe">
+          <span class="screen-idx">08</span>
+          <img src="screenshots/08-recipe.png" alt="Recipe detail" />
+        </a>
+        <div class="screen-head">
+          <h3 class="screen-name">Recipe <em>detail</em></h3>
+          <span class="screen-src">src/home-screens.jsx</span>
+        </div>
+        <p class="screen-desc">Generated cover art (CSS gradient placeholder), title, macros, ingredients table, step-by-step.</p>
+        <div class="screen-notes">
+          <span class="tag">cover art</span>
+          <span class="tag">swap meal</span>
+        </div>
+      </figure>
+
+      <figure class="screen">
+        <a class="screen-frame" href="mia.html#checkin">
+          <span class="screen-idx">09</span>
+          <img src="screenshots/09-checkin.png" alt="Daily check-in" />
+        </a>
+        <div class="screen-head">
+          <h3 class="screen-name">Daily <em>check-in</em></h3>
+          <span class="screen-src">src/home-screens.jsx</span>
+        </div>
+        <p class="screen-desc">Weight slider, energy 1–5, adherence 1–5, craving chips, freeform note. Feeds the plan-adjust loop.</p>
+        <div class="screen-notes">
+          <span class="tag">8pm push</span>
+          <span class="tag">feedback</span>
+        </div>
+      </figure>
+
+      <figure class="screen">
+        <a class="screen-frame" href="mia.html#settings">
+          <span class="screen-idx">10</span>
+          <img src="screenshots/10-settings.png" alt="Profile & settings" />
+        </a>
+        <div class="screen-head">
+          <h3 class="screen-name">Profile <em>&amp; settings</em></h3>
+          <span class="screen-src">src/home-screens.jsx</span>
+        </div>
+        <p class="screen-desc">Identity, household, plan targets, store & loyalty (PC Optimum + Co-op), dietary prefs, app prefs.</p>
+        <div class="screen-notes">
+          <span class="tag">loyalty link</span>
+          <span class="tag">household</span>
+        </div>
+      </figure>
+
+    </div>
+  </section>
+
+  <!-- §03 TOKENS -->
+  <section id="tokens">
+    <h2>Design <em>tokens</em></h2>
+    <p class="sec-sub">§03 · all colors are oklch — hex fallbacks shown · convert to nearest P3 for iOS Asset Catalog</p>
+
+    <div class="tokens">
+
+      <!-- Colors -->
+      <div class="token-group" style="grid-column: span 12;">
+        <h3>Color · 9 tokens</h3>
+        <div class="swatches" style="grid-template-columns: repeat(6, 1fr);">
+          <div class="swatch">
+            <div class="swatch-chip" style="background:#f6eed4"></div>
+            <div class="swatch-name">Cream</div>
+            <div class="swatch-val">#f6eed4<br/>bg.primary</div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-chip" style="background:#ece6d6"></div>
+            <div class="swatch-name">Cream deep</div>
+            <div class="swatch-val">#ece6d6<br/>bg.secondary</div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-chip" style="background:#fbf6e3"></div>
+            <div class="swatch-name">Card</div>
+            <div class="swatch-val">#fbf6e3<br/>surface</div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-chip" style="background:#4a5228"></div>
+            <div class="swatch-name" style="color:var(--ink)">Olive</div>
+            <div class="swatch-val">#4a5228<br/>brand · primary</div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-chip" style="background:#2a3015"></div>
+            <div class="swatch-name">Olive ink</div>
+            <div class="swatch-val">#2a3015<br/>ink-on-olive</div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-chip" style="background:#f3b874"></div>
+            <div class="swatch-name">Apricot</div>
+            <div class="swatch-val">#f3b874<br/>accent · meals</div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-chip" style="background:#1a1a17"></div>
+            <div class="swatch-name">Ink</div>
+            <div class="swatch-val">#1a1a17<br/>text.primary</div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-chip" style="background:#55534b"></div>
+            <div class="swatch-name">Ink 2</div>
+            <div class="swatch-val">#55534b<br/>text.secondary</div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-chip" style="background:#8a877b"></div>
+            <div class="swatch-name">Muted</div>
+            <div class="swatch-val">#8a877b<br/>text.tertiary</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Type -->
+      <div class="token-group" style="grid-column: span 7;">
+        <h3>Type · 3 families · 7 sizes</h3>
+        <div class="type-row">
+          <div class="type-meta">Display<br/>40 / 0.96 / -2%</div>
+          <div class="type-sample" style="font-size:40px; font-style:italic">Your <span style="font-style:normal">7-day</span> plan</div>
+        </div>
+        <div class="type-row">
+          <div class="type-meta">H1<br/>28 / 1.1 / -1%</div>
+          <div class="type-sample" style="font-size:28px">Fine-tune before <em>generating</em></div>
+        </div>
+        <div class="type-row">
+          <div class="type-meta">H2<br/>22 / 1.2</div>
+          <div class="type-sample" style="font-size:22px">Sunday Batch Cooking System</div>
+        </div>
+        <div class="type-row">
+          <div class="type-meta">Body<br/>15 / 1.5</div>
+          <div class="type-sample sans" style="font-size:15px">I'll ask you ~15 quick things, then match you with a plan that actually fits your life.</div>
+        </div>
+        <div class="type-row">
+          <div class="type-meta">Micro<br/>11 / 1 · 0.1em</div>
+          <div class="type-sample mono" style="font-size:11px">MEAL-PLAN-01 · STEP 3 OF 3 · REFINE</div>
+        </div>
+      </div>
+
+      <!-- Spacing & Radii -->
+      <div class="token-group" style="grid-column: span 5;">
+        <h3>Spacing · 8pt scale</h3>
+        <div class="spacing-grid">
+          <div class="space-item"><div class="space-box" style="width:4px;height:4px"></div><div class="space-lbl">4</div></div>
+          <div class="space-item"><div class="space-box" style="width:8px;height:8px"></div><div class="space-lbl">8</div></div>
+          <div class="space-item"><div class="space-box" style="width:12px;height:12px"></div><div class="space-lbl">12</div></div>
+          <div class="space-item"><div class="space-box" style="width:16px;height:16px"></div><div class="space-lbl">16</div></div>
+          <div class="space-item"><div class="space-box" style="width:24px;height:24px"></div><div class="space-lbl">24</div></div>
+          <div class="space-item"><div class="space-box" style="width:32px;height:32px"></div><div class="space-lbl">32</div></div>
+        </div>
+        <h3 style="margin-top:28px">Radii</h3>
+        <div class="spacing-grid" style="grid-template-columns:repeat(4,1fr)">
+          <div class="space-item"><div class="space-box" style="width:40px;height:40px;border-radius:6px;background:#4a5228"></div><div class="space-lbl">6 · chip</div></div>
+          <div class="space-item"><div class="space-box" style="width:40px;height:40px;border-radius:14px;background:#4a5228"></div><div class="space-lbl">14 · card</div></div>
+          <div class="space-item"><div class="space-box" style="width:40px;height:40px;border-radius:22px;background:#4a5228"></div><div class="space-lbl">22 · sheet</div></div>
+          <div class="space-item"><div class="space-box" style="width:40px;height:40px;border-radius:999px;background:#4a5228"></div><div class="space-lbl">999 · pill</div></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- §04 INTERACTIONS -->
+  <section id="interactions">
+    <h2>Interaction <em>notes</em></h2>
+    <p class="sec-sub">§04 · the tactile details worth preserving in the native port</p>
+
+    <div class="interactions">
+      <div class="interaction">
+        <h4>Chat typing rhythm</h4>
+        <p>Mia's bubbles appear with a 700–1400ms "typing" dot cluster before each message. Stagger is uneven — feels human, not scripted.</p>
+      </div>
+      <div class="interaction">
+        <h4>Plan generation spinner</h4>
+        <p>"Mia is cooking up your week…" micro-copy rotates through 4 phrases (~3s each) while the LLM streams. Copy variants in <code>plan-screen.jsx</code>.</p>
+      </div>
+      <div class="interaction">
+        <h4>Day switcher</h4>
+        <p>Day pills (Mon–Sun) have a spring on tap — selected day scales 1.08x for 180ms then settles. Meals cross-fade (opacity 120ms).</p>
+      </div>
+      <div class="interaction">
+        <h4>Grocery row check</h4>
+        <p>Tapping a row checks it and strikethroughs. Loyalty pills (<span class="kbd">PC $0.75</span>) pulse briefly on first load to draw attention.</p>
+      </div>
+      <div class="interaction">
+        <h4>Sheet presentation</h4>
+        <p>Modals ("Send to store", "Swap meal") use a 22px-radius bottom sheet with iOS-standard detents (medium, large). Backdrop at 40% ink.</p>
+      </div>
+      <div class="interaction">
+        <h4>Check-in sliders</h4>
+        <p>Weight slider snaps to 0.2lb; haptic <code>.light</code> on each step. Energy/adherence 1–5 buttons are segmented pills — selected state uses olive fill.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- §05 ENGINEERING -->
+  <section id="engineering">
+    <h2>Engineering <em>pointers</em></h2>
+    <p class="sec-sub">§05 · recommended stack and component → file mapping · full rationale in <a href="HANDOFF.md">HANDOFF.md</a></p>
+
+    <div class="eng">
+      <div class="eng-col">
+        <h3>Recommended stack</h3>
+        <table class="stack-table">
+          <tbody>
+            <tr><td>iOS client</td><td><span class="code">SwiftUI + Swift 5.10</span></td></tr>
+            <tr><td>State</td><td><span class="code">@Observable + SwiftData</span></td></tr>
+            <tr><td>LLM</td><td><span class="code">Claude Haiku 4.5</span></td></tr>
+            <tr><td>Backend</td><td><span class="code">CF Workers / Supabase</span></td></tr>
+            <tr><td>Auth</td><td>Sign in with Apple</td></tr>
+            <tr><td>Payments</td><td>RevenueCat · $9.99/mo</td></tr>
+            <tr><td>Push</td><td>APNs · 8pm check-in</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="eng-col">
+        <h3>Prototype files → native views</h3>
+        <ul class="eng-list">
+          <li><span class="name">ChatView</span><span class="path">src/chat-ui.jsx · chat-flow.jsx</span></li>
+          <li><span class="name">PromptSelectView</span><span class="path">src/prompt-select.jsx</span></li>
+          <li><span class="name">PromptCatalogView</span><span class="path">src/prompts.jsx</span></li>
+          <li><span class="name">RefineView</span><span class="path">src/plan-screen.jsx</span></li>
+          <li><span class="name">PlanPreviewView</span><span class="path">src/plan-screen.jsx</span></li>
+          <li><span class="name">DashboardView</span><span class="path">src/home-screens.jsx</span></li>
+          <li><span class="name">GroceryView</span><span class="path">src/home-screens.jsx</span></li>
+          <li><span class="name">RecipeView</span><span class="path">src/home-screens.jsx</span></li>
+          <li><span class="name">CheckinView</span><span class="path">src/home-screens.jsx</span></li>
+          <li><span class="name">SettingsView</span><span class="path">src/home-screens.jsx</span></li>
+          <li><span class="name">Prompt catalog (data)</span><span class="path">src/prompt-builder.jsx</span></li>
+          <li><span class="name">Chat question bank</span><span class="path">src/questions.jsx</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- COLOPHON -->
+  <footer class="colophon">
+    <div>
+      <b>Mia · handoff bundle</b> · prepared for native iOS build<br/>
+      Prototype at <a href="mia.html">mia.html</a> · design doc at <a href="HANDOFF.md">HANDOFF.md</a><br/>
+      Questions during build → reach the designer; do not reinvent the flow.
+    </div>
+    <div class="files">
+      <span>mia.html</span><span>→ prototype</span>
+      <span>HANDOFF.md</span><span>→ build doc</span>
+      <span>README.md</span><span>→ orientation</span>
+      <span>src/*.jsx</span><span>→ 9 component files</span>
+      <span>icons/</span><span>→ PWA assets</span>
+      <span>screenshots/</span><span>→ 10 reference PNGs</span>
+    </div>
+  </footer>
+
+</div>
+
+</body>
+</html>
