@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { NextResponse } from 'next/server';
+import { logUsage } from '@/lib/log-usage';
 import { db, USER_ID } from '@/lib/db';
 import { plans, recipes, users } from '@/lib/schema';
 import { and, eq } from 'drizzle-orm';
@@ -75,11 +76,14 @@ Rules:
 
   try {
     const client = new Anthropic({ apiKey });
+    const t0 = Date.now();
+    const _t0 = Date.now();
     const resp = await client.messages.create({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 1000,
       messages: [{ role: 'user', content: userPrompt }],
     });
+    logUsage('regenerate-day', resp.usage, Date.now() - _t0);
     const text = resp.content
       .filter((b): b is Anthropic.TextBlock => b.type === 'text')
       .map(b => b.text)

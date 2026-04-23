@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { db, USER_ID } from '@/lib/db';
 import { users, plans } from '@/lib/schema';
 import { eq } from 'drizzle-orm';
+import { logUsage } from '@/lib/log-usage';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -147,11 +148,13 @@ Rules:
 
   try {
     const client = new Anthropic({ apiKey });
+    const t0 = Date.now();
     const resp = await client.messages.create({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 4096,
       messages: [{ role: 'user', content: userPrompt }],
     });
+    logUsage('generate-plan', resp.usage, Date.now() - t0);
 
     const text = resp.content
       .filter((b): b is Anthropic.TextBlock => b.type === 'text')

@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { NextResponse } from 'next/server';
+import { logUsage } from '@/lib/log-usage';
 import { randomUUID } from 'node:crypto';
 import { db, USER_ID } from '@/lib/db';
 import { plans, users } from '@/lib/schema';
@@ -96,11 +97,14 @@ Rules:
 
   try {
     const client = new Anthropic({ apiKey });
+    const t0 = Date.now();
+    const _t0 = Date.now();
     const resp = await client.messages.create({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 4096,
       messages: [{ role: 'user', content: userPrompt }],
     });
+    logUsage('regenerate-plan', resp.usage, Date.now() - _t0);
 
     const text = resp.content
       .filter((b): b is Anthropic.TextBlock => b.type === 'text')
