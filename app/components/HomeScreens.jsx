@@ -1593,7 +1593,12 @@ export function SettingsScreen({ onBack, onNav, onRestart, onRegenerate, onUpdat
 
         <SettingGroup title="App">
           <SettingRow label="Notifications" toggle value={true} />
-          <SettingRow label="Dark mode" toggle value={false} />
+          <SettingRow label="Dark mode" toggle value={typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme') === 'dark'} onClick={() => {
+            const html = document.documentElement;
+            const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', next);
+            try { localStorage.setItem('mia-theme', next); } catch {}
+          }} />
           <SettingRow label="Export plan" chevron onClick={() => {}} />
           <SettingRow label="Sign out" tone="muted" chevron onClick={() => {}} />
         </SettingGroup>

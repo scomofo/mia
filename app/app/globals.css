@@ -9,6 +9,21 @@
   --ink-2: #3B3D32;
   --ink-3: #6B6A58;
   --ink-mute: #9A9680;
+  --divider: rgba(31, 36, 25, 0.08);
+}
+
+html[data-theme="dark"] {
+  --cream: #1a1e17;
+  --cream-2: #242821;
+  --cream-3: #2d332a;
+  --ink: #f1ecdd;
+  --ink-2: #c9c4b3;
+  --ink-3: #8e8b7a;
+  --ink-mute: #66645a;
+  --divider: rgba(255, 245, 220, 0.08);
+}
+
+:root {
 
   --olive: oklch(58% 0.12 130);
   --olive-deep: oklch(42% 0.11 130);
@@ -21,8 +36,6 @@
   --tangerine-soft: oklch(94% 0.06 65);
 
   --plum: oklch(45% 0.11 350);
-
-  --divider: rgba(31, 36, 25, 0.08);
 
   --serif: 'Instrument Serif', 'Times New Roman', serif;
   --sans: 'Geist', -apple-system, system-ui, sans-serif;
