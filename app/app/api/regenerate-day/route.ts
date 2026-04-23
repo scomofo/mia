@@ -8,7 +8,7 @@ export const runtime = 'nodejs';
 export const maxDuration = 60;
 
 type Meal = { t: string; name: string; cal?: number; time?: number; kid?: boolean; prep?: boolean; eaten?: boolean };
-type Day = { day: string; kid?: boolean; meals: Meal[] };
+type Day = { day: string; kid?: boolean; note?: string; meals: Meal[] };
 type Answers = Record<string, unknown>;
 
 export async function POST(req: Request) {
@@ -42,12 +42,14 @@ export async function POST(req: Request) {
   if (answers.time) prefs.push(`Time budget: ~${answers.time} min`);
 
   const oldNames = day.meals.map(m => `${m.t}: ${m.name}`).join(', ');
+  const note = typeof day.note === 'string' && day.note.trim() ? day.note.trim() : null;
 
   const userPrompt = `Regenerate a single day in a weekly meal plan.
 
 Day: ${dayKey}
 Target: ~${cals} kcal/day split across 4 meals${kid ? ', kids are home' : ', adults only'}
 Previous day was: ${oldNames}
+${note ? `User note for this day: "${note}"` : ''}
 
 Constraints:
 ${prefs.join('\n')}
@@ -88,6 +90,7 @@ Rules:
     const newDay = JSON.parse(match[0]) as Day;
     newDay.day = dayKey;
     newDay.kid = kid;
+    if (note) newDay.note = note;
     if (!newDay.meals || newDay.meals.length !== 4) throw new Error('Expected 4 meals');
 
     const idx = days.findIndex(d => d.day === dayKey);

@@ -227,8 +227,10 @@ const SAMPLE_DAYS = [
   ]},
 ];
 
-export function PlanPreviewScreen({ prompt, answers, tuning, initialPlan, onPlanReady, onOpenMeal, onRegenerateDay, onRestart, onBack, onNav }) {
+export function PlanPreviewScreen({ prompt, answers, tuning, initialPlan, onPlanReady, onOpenMeal, onRegenerateDay, onUpdateDayNote, onRestart, onBack, onNav }) {
   const [shuffling, setShuffling] = useState(false);
+  const [noteOpen, setNoteOpen] = useState(false);
+  const [noteDraft, setNoteDraft] = useState('');
   const [dayIdx, setDayIdx] = useState(0);
   const [liveDays, setLiveDays] = useState(initialPlan?.days ?? null);
   const [status, setStatus] = useState(initialPlan ? 'done' : 'idle');
@@ -376,6 +378,13 @@ export function PlanPreviewScreen({ prompt, answers, tuning, initialPlan, onPlan
           }}>KIDS NIGHT</span>
         )}
         <div style={{ flex: 1 }} />
+        {onUpdateDayNote && !shuffling && (
+          <button onClick={() => { setNoteDraft(day.note || ''); setNoteOpen(true); }} style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            fontFamily: 'var(--sans)', fontSize: 12, color: day.note ? 'var(--olive-deep)' : 'var(--ink-3)', fontWeight: 500,
+            padding: '4px 8px',
+          }}>{day.note ? '✎ Note' : '+ Note'}</button>
+        )}
         {onRegenerateDay && !shuffling && (
           <button onClick={async () => {
             setShuffling(true);
@@ -392,6 +401,16 @@ export function PlanPreviewScreen({ prompt, answers, tuning, initialPlan, onPlan
         )}
         <div style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-3)' }}>{totalCal} kcal</div>
       </div>
+
+      {day.note && (
+        <div style={{ padding: '4px 16px 0' }}>
+          <div style={{
+            background: 'var(--cream-2)', borderRadius: 12, padding: '8px 12px',
+            fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 14, color: 'var(--ink-2)',
+            letterSpacing: -0.1, lineHeight: 1.4,
+          }}>“{day.note}”</div>
+        </div>
+      )}
 
       <div style={{ padding: '10px 16px 120px', display: 'flex', flexDirection: 'column', gap: 8 }}>
         {day.meals.map((m, i) => (
@@ -451,6 +470,46 @@ export function PlanPreviewScreen({ prompt, answers, tuning, initialPlan, onPlan
           boxShadow: '0 4px 14px rgba(66,77,34,0.25)',
         }}>Get grocery list →</button>
       </div>
+
+      {noteOpen && (
+        <div onClick={() => setNoteOpen(false)} style={{
+          position: 'absolute', inset: 0, zIndex: 60,
+          background: 'rgba(31,36,25,0.45)',
+          display: 'flex', alignItems: 'flex-end',
+        }}>
+          <div onClick={e => e.stopPropagation()} style={{
+            width: '100%', background: 'var(--cream)',
+            borderTopLeftRadius: 28, borderTopRightRadius: 28,
+            padding: '10px 20px 36px',
+          }}>
+            <div style={{ width: 36, height: 5, borderRadius: 3, background: 'rgba(31,36,25,0.18)', margin: '6px auto 18px' }} />
+            <div style={{ fontFamily: 'var(--mono)', fontSize: 10.5, color: 'var(--ink-3)', letterSpacing: 0.08, textTransform: 'uppercase', marginBottom: 6 }}>Note for {day.day}</div>
+            <div style={{ fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--ink-3)', marginBottom: 10 }}>Mia uses this when shuffling the day.</div>
+            <textarea value={noteDraft} onChange={e => setNoteDraft(e.target.value)} autoFocus
+              placeholder="e.g. I'm traveling — need something portable"
+              style={{
+                width: '100%', minHeight: 90, padding: 12,
+                fontFamily: 'var(--sans)', fontSize: 14, color: 'var(--ink)',
+                border: '1px solid var(--divider)', borderRadius: 12,
+                background: '#fff', resize: 'none', outline: 'none',
+              }} />
+            <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
+              <button onClick={() => setNoteOpen(false)} style={{
+                flex: 1, background: '#fff', border: '1px solid var(--divider)',
+                borderRadius: 999, padding: '12px',
+                fontFamily: 'var(--sans)', fontSize: 14, fontWeight: 500,
+                color: 'var(--ink-2)', cursor: 'pointer',
+              }}>Cancel</button>
+              <button onClick={async () => { await onUpdateDayNote?.(day.day, noteDraft); setNoteOpen(false); }} style={{
+                flex: 2, background: 'var(--olive-deep)', color: '#fff',
+                border: 'none', borderRadius: 999, padding: '12px',
+                fontFamily: 'var(--sans)', fontSize: 14, fontWeight: 600,
+                cursor: 'pointer',
+              }}>Save</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

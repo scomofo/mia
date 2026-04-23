@@ -66,6 +66,17 @@ export default function MiaApp() {
       return false;
     }
   };
+  const onUpdateDayNote = async (dayKey, note) => {
+    try {
+      const r = await fetch('/api/update-day-note', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ day: dayKey, note }),
+      });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const { days } = await r.json();
+      setPlan(p => ({ ...(p || {}), days }));
+    } catch (e) { console.warn('update-day-note failed:', e); }
+  };
   const onRegenerateDay = async (dayKey) => {
     try {
       const r = await fetch('/api/regenerate-day', {
@@ -152,6 +163,7 @@ export default function MiaApp() {
           onPlanReady={onPlanReady}
           onOpenMeal={onOpenMeal}
           onRegenerateDay={onRegenerateDay}
+          onUpdateDayNote={onUpdateDayNote}
           onRestart={onRestart}
           onBack={() => setScreen('refine')}
           onNav={onNav}
