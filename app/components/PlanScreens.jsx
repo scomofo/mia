@@ -462,13 +462,22 @@ export function PlanPreviewScreen({ prompt, answers, tuning, initialPlan, onPlan
         background: 'linear-gradient(to top, var(--cream) 70%, transparent)',
         display: 'flex', gap: 8,
       }}>
-        <button onClick={onRestart} style={{
+        <button onClick={async () => {
+          const text = days.map(d => {
+            const head = `${d.day}${d.kid ? ' · kids' : ''}${d.skipped ? ' · SKIPPED' : ''}${d.note ? ` · note: ${d.note}` : ''}`;
+            const lines = d.meals.map(m => `  ${m.t}: ${m.name}${m.cal ? ` (${m.cal} kcal, ${m.time || '?'} min)` : ''}`).join('\n');
+            return `${head}\n${lines}`;
+          }).join('\n\n');
+          const full = `Mia · 7-day plan\n${summary ? `"${summary}"\n` : ''}Target: ${tuning.cals} kcal / ${tuning.protein}g protein\n\n${text}`;
+          if (navigator.share) { try { await navigator.share({ title: 'Meal plan', text: full }); return; } catch {} }
+          try { await navigator.clipboard.writeText(full); alert('Plan copied'); } catch { alert('Clipboard blocked'); }
+        }} style={{
           background: '#fff', color: 'var(--ink-2)',
           border: '1px solid var(--divider)', borderRadius: 999,
           padding: '14px 18px',
           fontFamily: 'var(--sans)', fontSize: 14, fontWeight: 500,
           cursor: 'pointer',
-        }}>Restart</button>
+        }}>Copy</button>
         <button onClick={() => onNav && onNav('grocery')} style={{
           flex: 1, background: 'var(--olive-deep)', color: '#fff',
           border: 'none', borderRadius: 999, padding: '14px',
