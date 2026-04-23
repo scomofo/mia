@@ -188,12 +188,11 @@ function BottomNav({ active, onNav }) {
   );
 }
 
-export function Dashboard({ onNav, plan, tuning, onOpenMeal }) {
+export function Dashboard({ onNav, plan, tuning, onOpenMeal, onRegenerate }) {
   const today = new Date();
   const dayName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][today.getDay()];
   const dateLabel = today.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
 
-  // Map JS weekday (0=Sun) to plan index (MON=0..SUN=6)
   const todayIdx = (today.getDay() + 6) % 7;
   const todayPlan = plan?.days?.[todayIdx] || null;
   const isKidNight = todayPlan ? !!todayPlan.kid : true;
@@ -202,6 +201,38 @@ export function Dashboard({ onNav, plan, tuning, onOpenMeal }) {
     ? todayPlan.meals.filter(m => m.eaten && m.cal).reduce((s, m) => s + m.cal, 0)
     : 1480;
   const toGo = Math.max(0, calTarget - consumed);
+
+  // Plan age
+  const ageDays = plan?.startedOn
+    ? Math.floor((today.getTime() - new Date(plan.startedOn).getTime()) / 86400000)
+    : null;
+  const isStale = ageDays != null && ageDays >= 7;
+  const [regenStatus, setRegenStatus] = useState('idle'); // idle | generating
+
+  const handleRegenerate = async () => {
+    setRegenStatus('generating');
+    await onRegenerate?.();
+    setRegenStatus('idle');
+  };
+
+  // Check-in history
+  const [checkins, setCheckins] = useState(null);
+  useEffect(() => {
+    fetch('/api/checkin')
+      .then(r => r.json())
+      .then(j => setCheckins(j.checkins || []))
+      .catch(() => setCheckins([]));
+  }, []);
+
+  const latest = checkins?.[0];
+  const previous = checkins?.[1];
+  const weightDelta = latest?.weightLb && previous?.weightLb
+    ? Math.round((latest.weightLb - previous.weightLb) * 10) / 10
+    : null;
+  const recent = (checkins || []).slice(0, 7);
+  const avgAdherence = recent.length
+    ? recent.reduce((s, c) => s + (c.adherence || 0), 0) / recent.length
+    : null;
 
   return (
     <div style={{ height: '100%', overflow: 'auto', background: 'var(--cream)' }}>
@@ -290,6 +321,31 @@ export function Dashboard({ onNav, plan, tuning, onOpenMeal }) {
         </div>
       </div>
 
+      {isStale && (
+        <div style={{ padding: '8px 16px 0' }}>
+          <div style={{
+            background: 'var(--tomato-soft)',
+            borderRadius: 14, padding: '12px 14px',
+            display: 'flex', alignItems: 'center', gap: 10,
+          }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--tomato)', letterSpacing: 0.08, textTransform: 'uppercase', fontWeight: 600 }}>
+                Plan is {ageDays} days old
+              </div>
+              <div style={{ fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--ink-2)', marginTop: 2, letterSpacing: -0.1 }}>
+                Ready for a fresh week?
+              </div>
+            </div>
+            <button onClick={handleRegenerate} disabled={regenStatus !== 'idle'} style={{
+              background: 'var(--tomato)', color: '#fff', border: 'none',
+              borderRadius: 999, padding: '8px 14px', fontFamily: 'var(--sans)',
+              fontSize: 12, fontWeight: 600, cursor: regenStatus !== 'idle' ? 'wait' : 'pointer',
+              opacity: regenStatus !== 'idle' ? 0.6 : 1, whiteSpace: 'nowrap',
+            }}>{regenStatus === 'generating' ? 'Cooking…' : 'New week →'}</button>
+          </div>
+        </div>
+      )}
+
       <div style={{ padding: '14px 16px 8px' }}>
         <div style={{
           background: '#fff', borderRadius: 22, padding: 18,
@@ -317,6 +373,54 @@ export function Dashboard({ onNav, plan, tuning, onOpenMeal }) {
           </div>
         </div>
       </div>
+
+      {checkins && (
+        <div style={{ padding: '4px 16px 8px' }}>
+          <div onClick={() => onNav('checkin')} style={{
+            background: '#fff', borderRadius: 18, padding: 14,
+            display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer',
+            boxShadow: '0 1px 2px rgba(31,36,25,0.04), 0 0 0 1px rgba(31,36,25,0.04)',
+          }}>
+            {latest ? (
+              <>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--ink-3)', letterSpacing: 0.08, textTransform: 'uppercase' }}>Weight</div>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginTop: 2 }}>
+                    <span style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 24, color: 'var(--olive-deep)', lineHeight: 1 }}>{latest.weightLb ?? '—'}</span>
+                    <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-3)' }}>lb</span>
+                    {weightDelta != null && weightDelta !== 0 && (
+                      <span style={{
+                        marginLeft: 6, padding: '2px 6px', borderRadius: 6,
+                        background: weightDelta < 0 ? 'var(--olive-soft)' : 'var(--tomato-soft)',
+                        color: weightDelta < 0 ? 'var(--olive-deep)' : 'var(--tomato)',
+                        fontFamily: 'var(--mono)', fontSize: 10, fontWeight: 600,
+                      }}>{weightDelta < 0 ? '▼' : '▲'} {Math.abs(weightDelta)}</span>
+                    )}
+                  </div>
+                </div>
+                <div style={{ width: 1, alignSelf: 'stretch', background: 'var(--divider)' }} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--ink-3)', letterSpacing: 0.08, textTransform: 'uppercase' }}>Adherence</div>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginTop: 2 }}>
+                    <span style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: 24, color: 'var(--olive-deep)', lineHeight: 1 }}>
+                      {avgAdherence != null ? `${Math.round((avgAdherence / 5) * 100)}%` : '—'}
+                    </span>
+                    <span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--ink-3)' }}>last {recent.length}</span>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div style={{ flex: 1 }}>
+                <div style={{ fontFamily: 'var(--serif)', fontSize: 17, color: 'var(--ink)', letterSpacing: -0.01 }}>Log your first check-in</div>
+                <div style={{ fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--ink-3)', marginTop: 2 }}>Weight, energy, and a note to Mia</div>
+              </div>
+            )}
+            <svg width="8" height="14" viewBox="0 0 8 14" style={{ flexShrink: 0, opacity: 0.3 }}>
+              <path d="M1 1l6 6-6 6" stroke="var(--ink-2)" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+        </div>
+      )}
 
       <div style={{ padding: '8px 16px 100px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
@@ -1214,7 +1318,7 @@ const fmtList = (arr, fallback = 'None') => {
   return filtered.map(s => s.charAt(0).toUpperCase() + s.slice(1).replace(/-/g, ' ')).join(', ');
 };
 
-export function SettingsScreen({ onBack, onNav, onRestart, answers = {}, tuning, prompt }) {
+export function SettingsScreen({ onBack, onNav, onRestart, onRegenerate, answers = {}, tuning, prompt }) {
   const hh = HOUSEHOLD_LABEL[answers.household] || '—';
   const pat = PATTERN_LABEL[answers.pattern] || '—';
   const kids = KIDS_LABEL[answers.kids] || '—';
@@ -1266,6 +1370,7 @@ export function SettingsScreen({ onBack, onNav, onRestart, answers = {}, tuning,
           <SettingRow label="Active prompt" value={prompt?.title || '—'} onClick={() => {}} />
           <SettingRow label="Calorie target" value={tuning?.cals ? `${tuning.cals.toLocaleString()} kcal` : '—'} onClick={() => {}} />
           <SettingRow label="Protein target" value={tuning?.protein ? `${tuning.protein} g/day` : '—'} onClick={() => {}} />
+          <SettingRow label="Generate new week" value="" chevron onClick={async () => { await onRegenerate?.(); onNav?.('home'); }} />
           <SettingRow label="Restart onboarding" value="" chevron onClick={() => onRestart?.()} tone="muted" />
         </SettingGroup>
 

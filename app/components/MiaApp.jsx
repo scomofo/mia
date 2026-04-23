@@ -27,7 +27,7 @@ export default function MiaApp() {
         if (cancelled) return;
         if (p && a) {
           setAnswers(a);
-          setPlan({ summary: p.summary, days: p.days });
+          setPlan({ summary: p.summary, days: p.days, startedOn: p.startedOn });
           if (p.tuning) setTuning({ cals: p.tuning.cals ?? 2200, protein: p.tuning.protein ?? 160 });
           const prompt = PROMPTS.find(pr => pr.id === p.promptId);
           if (prompt) setSelected(prompt);
@@ -50,6 +50,18 @@ export default function MiaApp() {
   const onPlanReady = (p) => { setPlan(p); };
   const onOpenMeal = (dayKey, idx, meal) => { setSelectedMeal({ dayKey, idx, meal }); setScreen('recipe'); };
   const onPlanDaysUpdated = (days) => { setPlan(p => ({ ...(p || {}), days })); };
+  const onRegenerate = async () => {
+    try {
+      const r = await fetch('/api/regenerate-plan', { method: 'POST' });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const { summary, days, startedOn } = await r.json();
+      setPlan({ summary, days, startedOn });
+      return true;
+    } catch (e) {
+      console.warn('regenerate failed:', e);
+      return false;
+    }
+  };
   const onMealSwapped = (dayKey, idx, meal, days) => {
     setPlan(p => ({ ...(p || {}), days }));
     setSelectedMeal({ dayKey, idx, meal });
@@ -98,11 +110,11 @@ export default function MiaApp() {
           onNav={onNav}
         />
       )}
-      {screen === 'home' && <Dashboard onNav={onNav} plan={plan} answers={answers} tuning={tuning} onOpenMeal={onOpenMeal} />}
+      {screen === 'home' && <Dashboard onNav={onNav} plan={plan} answers={answers} tuning={tuning} onOpenMeal={onOpenMeal} onRegenerate={onRegenerate} />}
       {screen === 'grocery' && <GroceryScreen onBack={() => setScreen('home')} onNav={onNav} />}
       {screen === 'recipe' && <RecipeScreen onBack={() => setScreen('home')} onNav={onNav} selected={selectedMeal} onPlanDaysUpdated={onPlanDaysUpdated} onMealSwapped={onMealSwapped} />}
       {screen === 'checkin' && <CheckinScreen onBack={() => setScreen('home')} onNav={onNav} />}
-      {screen === 'settings' && <SettingsScreen onBack={() => setScreen('home')} onNav={onNav} onRestart={onRestart} answers={answers} tuning={tuning} prompt={selected} />}
+      {screen === 'settings' && <SettingsScreen onBack={() => setScreen('home')} onNav={onNav} onRestart={onRestart} onRegenerate={onRegenerate} answers={answers} tuning={tuning} prompt={selected} />}
     </div>
   );
 }
