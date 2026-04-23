@@ -904,15 +904,18 @@ export function RecipeScreen({ onBack, onNav, selected, onPlanDaysUpdated, onMea
     }
   };
 
-  const swap = async () => {
+  const [swapOpen, setSwapOpen] = useState(false);
+
+  const swap = async (reason) => {
     if (!selected || acting) return;
+    setSwapOpen(false);
     setActing('swapping');
     setStatus('generating');
     try {
       const r = await fetch('/api/swap-meal', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ day: selected.dayKey, idx: selected.idx }),
+        body: JSON.stringify({ day: selected.dayKey, idx: selected.idx, reason }),
       });
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
       const { meal: newMeal, days } = await r.json();
@@ -1104,7 +1107,7 @@ export function RecipeScreen({ onBack, onNav, selected, onPlanDaysUpdated, onMea
         background: 'linear-gradient(to top, var(--cream) 70%, transparent)',
         display: 'flex', gap: 8,
       }}>
-        <button onClick={swap} disabled={!!acting} style={{
+        <button onClick={() => !acting && setSwapOpen(true)} disabled={!!acting} style={{
           background: '#fff', border: '1px solid var(--divider)',
           borderRadius: 999, padding: '14px 16px',
           fontFamily: 'var(--sans)', fontSize: 14, color: 'var(--ink-2)', fontWeight: 500,
@@ -1121,6 +1124,39 @@ export function RecipeScreen({ onBack, onNav, selected, onPlanDaysUpdated, onMea
           opacity: acting === 'eating' ? 0.6 : 1,
         }}>{acting === 'eating' ? 'Saving…' : isEaten ? 'Unmark eaten' : 'Mark eaten →'}</button>
       </div>
+      {swapOpen && (
+        <div onClick={() => setSwapOpen(false)} style={{
+          position: 'absolute', inset: 0, zIndex: 60,
+          background: 'rgba(31,36,25,0.45)',
+          display: 'flex', alignItems: 'flex-end',
+        }}>
+          <div onClick={e => e.stopPropagation()} style={{
+            width: '100%', background: 'var(--cream)',
+            borderTopLeftRadius: 28, borderTopRightRadius: 28,
+            padding: '10px 20px 36px',
+          }}>
+            <div style={{ width: 36, height: 5, borderRadius: 3, background: 'rgba(31,36,25,0.18)', margin: '6px auto 18px' }} />
+            <div style={{ fontFamily: 'var(--mono)', fontSize: 10.5, color: 'var(--ink-3)', letterSpacing: 0.08, textTransform: 'uppercase', marginBottom: 12 }}>Why swap?</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {[
+                { id: 'lighter', label: 'Lighter / leaner' },
+                { id: 'quicker', label: 'Quicker to make' },
+                { id: 'heartier', label: 'More filling' },
+                { id: 'different-cuisine', label: 'Different cuisine' },
+                { id: 'not-feeling-it', label: "Just not feeling it" },
+                { id: null, label: 'No reason — just change it' },
+              ].map(r => (
+                <button key={r.label} onClick={() => swap(r.id)} style={{
+                  background: '#fff', border: '1px solid var(--divider)',
+                  borderRadius: 14, padding: '14px 16px', textAlign: 'left',
+                  fontFamily: 'var(--sans)', fontSize: 14, color: 'var(--ink)',
+                  cursor: 'pointer',
+                }}>{r.label}</button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
       <BottomNav active="plan" onNav={onNav} />
     </div>
   );

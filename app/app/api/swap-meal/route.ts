@@ -14,7 +14,7 @@ export async function POST(req: Request) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return NextResponse.json({ error: 'ANTHROPIC_API_KEY not set' }, { status: 500 });
 
-  const { day: dayKey, idx } = (await req.json()) as { day: string; idx: number };
+  const { day: dayKey, idx, reason } = (await req.json()) as { day: string; idx: number; reason?: string };
 
   const plan = db
     .select()
@@ -41,6 +41,7 @@ export async function POST(req: Request) {
   const userPrompt = `Replace this meal with a different one:
 
 Old meal: "${old.name}" (${old.t}, ~${old.cal ?? 'moderate'} kcal, ${old.time ?? 15} min${old.kid ? ', kid-friendly' : ''})
+${reason ? `Why swap: ${reason}` : ''}
 
 Constraints:
 ${prefs.join('\n')}
