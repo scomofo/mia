@@ -1,5 +1,10 @@
 import MiaApp from "@/components/MiaApp";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 export default function Home() {
-  return <MiaApp />;
+  return (
+    <ErrorBoundary>
+      <MiaApp />
+    </ErrorBoundary>
+  );
 }
