@@ -763,7 +763,7 @@ export function GroceryScreen({ onBack, onNav }) {
             </div>
           </div>
 
-          <button style={{
+          <button onClick={() => window.open('https://www.pcoptimum.ca/load?page=RCSSDigitalCouponBoard20220929', '_blank')} style={{
             width: '100%', marginTop: 10, background: 'transparent',
             border: '1px dashed rgba(31,36,25,0.25)', borderRadius: 10,
             padding: '9px 12px', cursor: 'pointer',
@@ -771,7 +771,7 @@ export function GroceryScreen({ onBack, onNav }) {
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
           }}>
             <svg width="12" height="12" viewBox="0 0 12 12"><path d="M6 1v10M1 6h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
-            Load 7 new PC Optimum offers to your card
+            Load PC Optimum offers to your card
           </button>
         </div>
 
@@ -1535,8 +1535,27 @@ function PrefEditor({ open, field, current, onSave, onClose }) {
   );
 }
 
-export function SettingsScreen({ onBack, onNav, onRestart, onRegenerate, onUpdateTargets, onUpdatePrefs, answers = {}, tuning, prompt }) {
+export function SettingsScreen({ onBack, onNav, onRestart, onRegenerate, onUpdateTargets, onUpdatePrefs, onChangePersona, answers = {}, tuning, prompt, plan }) {
   const [editor, setEditor] = useState(null); // 'cals' | 'protein' | 'loves' | 'hates' | 'restrictions' | null
+  const [checkinList, setCheckinList] = useState(null);
+  useEffect(() => {
+    fetch('/api/checkin').then(r => r.json()).then(j => setCheckinList(j.checkins || [])).catch(() => setCheckinList([]));
+  }, []);
+
+  const dayN = plan?.startedOn
+    ? Math.max(1, Math.floor((Date.now() - new Date(plan.startedOn).getTime()) / 86400000) + 1)
+    : null;
+  const latest = checkinList?.[0];
+  const earliest = checkinList?.[checkinList.length - 1];
+  const lbDelta = latest?.weightLb && earliest?.weightLb && latest !== earliest
+    ? Math.round((latest.weightLb - earliest.weightLb) * 10) / 10
+    : null;
+  const recent = (checkinList || []).slice(0, 14);
+  const avgAdh = recent.length
+    ? recent.reduce((s, c) => s + (c.adherence || 0), 0) / recent.length
+    : null;
+  const adhPct = avgAdh != null ? Math.round((avgAdh / 5) * 100) : null;
+  const eatenCount = plan?.days?.reduce((s, d) => s + (d.meals?.filter(m => m.eaten).length || 0), 0) || 0;
   const hh = HOUSEHOLD_LABEL[answers.household] || '—';
   const pat = PATTERN_LABEL[answers.pattern] || '—';
   const kids = KIDS_LABEL[answers.kids] || '—';
@@ -1560,22 +1579,20 @@ export function SettingsScreen({ onBack, onNav, onRestart, onRegenerate, onUpdat
             }}>A</div>
             <div style={{ flex: 1 }}>
               <div style={{ fontFamily: 'var(--serif)', fontSize: 24, fontWeight: 400, color: 'var(--ink)', lineHeight: 1.1 }}>You</div>
-              <div style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-3)', letterSpacing: 0.04, marginTop: 2 }}>{prompt?.title || 'Meal plan'} · {goal.toLowerCase()}</div>
+              <div style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-3)', letterSpacing: 0.04, marginTop: 2 }}>
+                {dayN ? `Day ${dayN} · ` : ''}{prompt?.title || 'Meal plan'} · {goal.toLowerCase()}
+              </div>
             </div>
           </div>
           <div style={{ display: 'flex', gap: 14, marginTop: 16, paddingTop: 16, borderTop: '1px solid rgba(31,36,25,0.08)' }}>
-            <Stat v="−3.2" u="lb" l="Lost" />
-            <Stat v="87%" u="" l="Adherence" />
-            <Stat v="28" u="" l="Meals logged" />
+            <Stat v={lbDelta != null ? (lbDelta < 0 ? `−${Math.abs(lbDelta)}` : `+${lbDelta}`) : '—'} u={lbDelta != null ? 'lb' : ''} l="Δ weight" />
+            <Stat v={adhPct != null ? `${adhPct}%` : '—'} u="" l="Adherence" />
+            <Stat v={eatenCount ? String(eatenCount) : '—'} u="" l="Meals eaten" />
           </div>
         </div>
 
-        <SettingGroup title="Store & loyalty">
-          <SettingRow label="Home store" value="RCSS Camrose" onClick={() => {}} />
-          <SettingRow label="PC Optimum" value="•••• 4829 · 42,150 pts" onClick={() => {}} />
-          <SettingRow label="Load PC offers" value="7 new this week" chevron onClick={() => window.open('https://www.pcoptimum.ca/load?page=RCSSDigitalCouponBoard20220929', '_blank')} />
-          <SettingRow label="Co-op membership" value="#CR-3104 · $127 equity" onClick={() => {}} />
-          <SettingRow label="Flyer-match savings" toggle value={true} />
+        <SettingGroup title="Loyalty">
+          <SettingRow label="Open PC Optimum offers" value="" chevron onClick={() => window.open('https://www.pcoptimum.ca/load?page=RCSSDigitalCouponBoard20220929', '_blank')} />
         </SettingGroup>
 
         <SettingGroup title="Household">
@@ -1585,7 +1602,7 @@ export function SettingsScreen({ onBack, onNav, onRestart, onRegenerate, onUpdat
         </SettingGroup>
 
         <SettingGroup title="Plan">
-          <SettingRow label="Active prompt" value={prompt?.title || '—'} onClick={() => {}} />
+          <SettingRow label="Active persona" value={prompt?.title || '—'} onClick={() => onChangePersona?.()} />
           <SettingRow label="Calorie target" value={tuning?.cals ? `${tuning.cals.toLocaleString()} kcal` : '—'} onClick={() => setEditor('cals')} />
           <SettingRow label="Protein target" value={tuning?.protein ? `${tuning.protein} g/day` : '—'} onClick={() => setEditor('protein')} />
           <SettingRow label="Generate new week" value="" chevron onClick={async () => { await onRegenerate?.(); onNav?.('home'); }} />
@@ -1600,7 +1617,6 @@ export function SettingsScreen({ onBack, onNav, onRestart, onRegenerate, onUpdat
         </SettingGroup>
 
         <SettingGroup title="App">
-          <SettingRow label="Notifications" toggle value={true} />
           <SettingRow label="Dark mode" toggle value={typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme') === 'dark'} onClick={() => {
             const html = document.documentElement;
             const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
@@ -1631,7 +1647,6 @@ export function SettingsScreen({ onBack, onNav, onRestart, onRegenerate, onUpdat
               URL.revokeObjectURL(url);
             });
           }} />
-          <SettingRow label="Sign out" tone="muted" chevron onClick={() => {}} />
         </SettingGroup>
       </div>
       <BottomNav active="settings" onNav={onNav} />

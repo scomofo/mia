@@ -5,7 +5,7 @@ import ChatApp from './ChatApp';
 import { PromptSelectScreen, BrowseAllScreen } from './PromptSelect';
 import { RefineScreen, PlanPreviewScreen } from './PlanScreens';
 import { Dashboard, GroceryScreen, RecipeScreen, CheckinScreen, SettingsScreen } from './HomeScreens';
-import { PROMPTS } from './data/prompts';
+import { PROMPTS, rankPrompts } from './data/prompts';
 
 export default function MiaApp() {
   const [screen, setScreen] = useState('chat');
@@ -63,6 +63,10 @@ export default function MiaApp() {
   const onPlanReady = (p) => { setPlan(p); };
   const onOpenMeal = (dayKey, idx, meal) => { setSelectedMeal({ dayKey, idx, meal }); setScreen('recipe'); };
   const onPlanDaysUpdated = (days) => { setPlan(p => ({ ...(p || {}), days })); };
+  const onChangePersona = () => {
+    setRanked(rankPrompts(answers));
+    setScreen('browse');
+  };
   const onUpdatePrefs = async (patch) => {
     try {
       const r = await fetch('/api/update-prefs', {
@@ -230,7 +234,7 @@ export default function MiaApp() {
       {screen === 'grocery' && <GroceryScreen onBack={() => setScreen('home')} onNav={onNav} />}
       {screen === 'recipe' && <RecipeScreen onBack={() => setScreen('home')} onNav={onNav} selected={selectedMeal} onPlanDaysUpdated={onPlanDaysUpdated} onMealSwapped={onMealSwapped} />}
       {screen === 'checkin' && <CheckinScreen onBack={() => setScreen('home')} onNav={onNav} plan={plan} />}
-      {screen === 'settings' && <SettingsScreen onBack={() => setScreen('home')} onNav={onNav} onRestart={onRestart} onRegenerate={onRegenerate} onUpdateTargets={onUpdateTargets} onUpdatePrefs={onUpdatePrefs} answers={answers} tuning={tuning} prompt={selected} />}
+      {screen === 'settings' && <SettingsScreen onBack={() => setScreen('home')} onNav={onNav} onRestart={onRestart} onRegenerate={onRegenerate} onUpdateTargets={onUpdateTargets} onUpdatePrefs={onUpdatePrefs} onChangePersona={onChangePersona} answers={answers} tuning={tuning} prompt={selected} plan={plan} />}
     </div>
   );
 }
