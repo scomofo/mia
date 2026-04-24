@@ -117,6 +117,19 @@ export default function MiaApp() {
       setPlan(p => ({ ...(p || {}), days }));
     } catch (e) { console.warn('update-day-note failed:', e); }
   };
+  const onToggleSkipMeal = async (dayKey, idx, skipped) => {
+    try {
+      const r = await fetch('/api/toggle-skip-meal', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ day: dayKey, idx, skipped }),
+      });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const { days } = await r.json();
+      setPlan(p => ({ ...(p || {}), days }));
+      // fire-and-forget grocery regen so the list stays in sync
+      fetch('/api/generate-grocery', { method: 'POST' }).catch(() => {});
+    } catch (e) { console.warn('toggle-skip-meal failed:', e); }
+  };
   const onToggleEaten = async (dayKey, idx, eaten) => {
     try {
       const r = await fetch('/api/mark-eaten', {
@@ -232,7 +245,7 @@ export default function MiaApp() {
       )}
       {screen === 'home' && <Dashboard onNav={onNav} plan={plan} answers={answers} tuning={tuning} onOpenMeal={onOpenMeal} onRegenerate={onRegenerate} onToggleEaten={onToggleEaten} />}
       {screen === 'grocery' && <GroceryScreen onBack={() => setScreen('home')} onNav={onNav} />}
-      {screen === 'recipe' && <RecipeScreen onBack={() => setScreen('home')} onNav={onNav} selected={selectedMeal} onPlanDaysUpdated={onPlanDaysUpdated} onMealSwapped={onMealSwapped} />}
+      {screen === 'recipe' && <RecipeScreen onBack={() => setScreen('home')} onNav={onNav} selected={selectedMeal} onPlanDaysUpdated={onPlanDaysUpdated} onMealSwapped={onMealSwapped} onToggleSkipMeal={onToggleSkipMeal} />}
       {screen === 'checkin' && <CheckinScreen onBack={() => setScreen('home')} onNav={onNav} plan={plan} />}
       {screen === 'settings' && <SettingsScreen onBack={() => setScreen('home')} onNav={onNav} onRestart={onRestart} onRegenerate={onRegenerate} onUpdateTargets={onUpdateTargets} onUpdatePrefs={onUpdatePrefs} onChangePersona={onChangePersona} answers={answers} tuning={tuning} prompt={selected} plan={plan} />}
     </div>

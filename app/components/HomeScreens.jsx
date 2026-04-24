@@ -302,8 +302,11 @@ export function Dashboard({ onNav, plan, tuning, answers, onOpenMeal, onRegenera
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {todayPlan
-            ? todayPlan.meals.map((m, i) => {
-                const firstUneaten = todayPlan.meals.findIndex(x => !x.eaten);
+            ? todayPlan.meals.filter(m => !m.skipped).map((m, iOrig) => {
+                const i = todayPlan.meals.indexOf(m);
+                const activeMeals = todayPlan.meals.filter(x => !x.skipped);
+                const firstUneaten = activeMeals.findIndex(x => !x.eaten);
+                const activePos = activeMeals.indexOf(m);
                 return (
                   <MealCard
                     key={i}
@@ -314,7 +317,7 @@ export function Dashboard({ onNav, plan, tuning, answers, onOpenMeal, onRegenera
                     kcal={m.cal}
                     time={m.time}
                     kid={m.kid}
-                    status={m.eaten ? 'done' : i === firstUneaten ? 'next' : undefined}
+                    status={m.eaten ? 'done' : activePos === firstUneaten ? 'next' : undefined}
                   />
                 );
               })
@@ -905,7 +908,7 @@ export function GroceryScreen({ onBack, onNav }) {
 
 const DAY_NAMES = { MON: 'Monday', TUE: 'Tuesday', WED: 'Wednesday', THU: 'Thursday', FRI: 'Friday', SAT: 'Saturday', SUN: 'Sunday' };
 
-export function RecipeScreen({ onBack, onNav, selected, onPlanDaysUpdated, onMealSwapped }) {
+export function RecipeScreen({ onBack, onNav, selected, onPlanDaysUpdated, onMealSwapped, onToggleSkipMeal }) {
   const [step, setStep] = useState(0);
   const [ingredients, setIngredients] = useState(null);
   const [steps, setSteps] = useState(null);
@@ -1138,11 +1141,24 @@ export function RecipeScreen({ onBack, onNav, selected, onPlanDaysUpdated, onMea
       }}>
         <button onClick={() => !acting && setSwapOpen(true)} disabled={!!acting} style={{
           background: '#fff', border: '1px solid var(--divider)',
-          borderRadius: 999, padding: '14px 16px',
-          fontFamily: 'var(--sans)', fontSize: 14, color: 'var(--ink-2)', fontWeight: 500,
+          borderRadius: 999, padding: '14px 14px',
+          fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--ink-2)', fontWeight: 500,
           cursor: acting ? 'wait' : 'pointer',
           opacity: acting ? 0.6 : 1,
         }}>{acting === 'swapping' ? 'Swapping…' : 'Swap'}</button>
+        <button onClick={async () => {
+          if (!selected || acting) return;
+          if (!confirm(`Remove "${meal?.name}" from the plan? Grocery list will refresh.`)) return;
+          setActing('removing');
+          await onToggleSkipMeal?.(selected.dayKey, selected.idx, true);
+          onBack?.();
+        }} disabled={!!acting} style={{
+          background: '#fff', border: '1px solid var(--divider)',
+          borderRadius: 999, padding: '14px 14px',
+          fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--tomato)', fontWeight: 500,
+          cursor: acting ? 'wait' : 'pointer',
+          opacity: acting ? 0.6 : 1,
+        }}>{acting === 'removing' ? 'Removing…' : 'Remove'}</button>
         <button onClick={markEaten} disabled={!!acting} style={{
           flex: 1,
           background: isEaten ? 'var(--ink-2)' : 'var(--olive-deep)', color: '#fff',

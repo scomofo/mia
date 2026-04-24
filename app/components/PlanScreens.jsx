@@ -428,7 +428,8 @@ export function PlanPreviewScreen({ prompt, answers, tuning, initialPlan, onPlan
               borderRadius: 16, padding: 14,
               display: 'flex', alignItems: 'center', gap: 12,
               cursor: m.prep || !onOpenMeal ? 'default' : 'pointer',
-              opacity: m.eaten ? 0.55 : 1,
+              opacity: m.skipped ? 0.4 : m.eaten ? 0.55 : 1,
+              textDecoration: m.skipped ? 'line-through' : 'none',
               boxShadow: m.prep ? 'none' : '0 1px 2px rgba(31,36,25,0.04), 0 0 0 1px rgba(31,36,25,0.04)',
             }}>
             <div style={{
