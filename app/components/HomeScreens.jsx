@@ -1148,17 +1148,20 @@ export function RecipeScreen({ onBack, onNav, selected, onPlanDaysUpdated, onMea
         }}>{acting === 'swapping' ? 'Swapping…' : 'Swap'}</button>
         <button onClick={async () => {
           if (!selected || acting) return;
-          if (!confirm(`Remove "${meal?.name}" from the plan? Grocery list will refresh.`)) return;
+          const isSkipped = !!meal?.skipped;
+          if (!isSkipped && !confirm(`Remove "${meal?.name}" from the plan? Grocery list will refresh.`)) return;
           setActing('removing');
-          await onToggleSkipMeal?.(selected.dayKey, selected.idx, true);
+          await onToggleSkipMeal?.(selected.dayKey, selected.idx, !isSkipped);
           onBack?.();
         }} disabled={!!acting} style={{
           background: '#fff', border: '1px solid var(--divider)',
           borderRadius: 999, padding: '14px 14px',
-          fontFamily: 'var(--sans)', fontSize: 13, color: 'var(--tomato)', fontWeight: 500,
+          fontFamily: 'var(--sans)', fontSize: 13,
+          color: meal?.skipped ? 'var(--olive-deep)' : 'var(--tomato)',
+          fontWeight: 500,
           cursor: acting ? 'wait' : 'pointer',
           opacity: acting ? 0.6 : 1,
-        }}>{acting === 'removing' ? 'Removing…' : 'Remove'}</button>
+        }}>{acting === 'removing' ? (meal?.skipped ? 'Restoring…' : 'Removing…') : (meal?.skipped ? 'Restore' : 'Remove')}</button>
         <button onClick={markEaten} disabled={!!acting} style={{
           flex: 1,
           background: isEaten ? 'var(--ink-2)' : 'var(--olive-deep)', color: '#fff',
