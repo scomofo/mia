@@ -422,12 +422,12 @@ export function PlanPreviewScreen({ prompt, answers, tuning, initialPlan, onPlan
       <div style={{ padding: '10px 16px 120px', display: 'flex', flexDirection: 'column', gap: 8, opacity: day.skipped ? 0.45 : 1 }}>
         {day.meals.map((m, i) => (
           <div key={i}
-            onClick={!m.prep && onOpenMeal ? () => onOpenMeal(day.day, i, m) : undefined}
+            onClick={onOpenMeal ? () => onOpenMeal(day.day, i, m) : undefined}
             style={{
               background: m.prep ? 'var(--olive-soft)' : '#fff',
               borderRadius: 16, padding: 14,
               display: 'flex', alignItems: 'center', gap: 12,
-              cursor: m.prep || !onOpenMeal ? 'default' : 'pointer',
+              cursor: onOpenMeal ? 'pointer' : 'default',
               opacity: m.skipped ? 0.4 : m.eaten ? 0.55 : 1,
               textDecoration: m.skipped ? 'line-through' : 'none',
               boxShadow: m.prep ? 'none' : '0 1px 2px rgba(31,36,25,0.04), 0 0 0 1px rgba(31,36,25,0.04)',

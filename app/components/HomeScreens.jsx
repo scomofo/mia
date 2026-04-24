@@ -912,6 +912,8 @@ export function RecipeScreen({ onBack, onNav, selected, onPlanDaysUpdated, onMea
   const [step, setStep] = useState(0);
   const [ingredients, setIngredients] = useState(null);
   const [steps, setSteps] = useState(null);
+  const [photoUrl, setPhotoUrl] = useState(null);
+  const [photoCredit, setPhotoCredit] = useState(null);
   const [status, setStatus] = useState('loading'); // loading | ready | generating | error
   const [acting, setActing] = useState(null); // 'eating' | 'swapping'
   const meal = selected?.meal;
@@ -974,6 +976,8 @@ export function RecipeScreen({ onBack, onNav, selected, onPlanDaysUpdated, onMea
         if (j.recipe) {
           setIngredients(j.recipe.ingredients);
           setSteps(j.recipe.steps);
+          setPhotoUrl(j.recipe.photoUrl || null);
+          setPhotoCredit(j.recipe.photoCredit || null);
           setStatus('ready');
           return;
         }
@@ -988,6 +992,8 @@ export function RecipeScreen({ onBack, onNav, selected, onPlanDaysUpdated, onMea
         if (cancelled) return;
         setIngredients(gj.recipe.ingredients);
         setSteps(gj.recipe.steps);
+        setPhotoUrl(gj.recipe.photoUrl || null);
+        setPhotoCredit(gj.recipe.photoCredit || null);
         setStatus('ready');
       } catch (e) {
         if (cancelled) return;
@@ -1007,20 +1013,33 @@ export function RecipeScreen({ onBack, onNav, selected, onPlanDaysUpdated, onMea
     <div style={{ height: '100%', overflow: 'auto', background: 'var(--cream)' }}>
       <div style={{
         position: 'relative', height: 260,
-        background: 'linear-gradient(135deg, oklch(90% 0.09 80), oklch(78% 0.11 55))',
+        background: photoUrl
+          ? `center / cover no-repeat url("${photoUrl}"), linear-gradient(135deg, oklch(90% 0.09 80), oklch(78% 0.11 55))`
+          : 'linear-gradient(135deg, oklch(90% 0.09 80), oklch(78% 0.11 55))',
         overflow: 'hidden',
       }}>
-        <div style={{
-          position: 'absolute', inset: 0, opacity: 0.15,
-          backgroundImage: 'repeating-linear-gradient(45deg, #fff 0, #fff 2px, transparent 2px, transparent 14px)',
-        }} />
-        <div style={{
-          position: 'absolute', inset: 0,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontFamily: 'var(--mono)', fontSize: 11, color: 'rgba(255,255,255,0.85)',
-          letterSpacing: 0.1, textTransform: 'uppercase',
-        }}>[ Food photo ]</div>
-        <div style={{ padding: '62px 16px 14px' }}>
+        {!photoUrl && (
+          <>
+            <div style={{
+              position: 'absolute', inset: 0, opacity: 0.15,
+              backgroundImage: 'repeating-linear-gradient(45deg, #fff 0, #fff 2px, transparent 2px, transparent 14px)',
+            }} />
+            <div style={{
+              position: 'absolute', inset: 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontFamily: 'var(--mono)', fontSize: 11, color: 'rgba(255,255,255,0.85)',
+              letterSpacing: 0.1, textTransform: 'uppercase',
+            }}>[ Food photo ]</div>
+          </>
+        )}
+        {photoUrl && (
+          <div style={{
+            position: 'absolute', inset: 0,
+            background: 'linear-gradient(180deg, rgba(0,0,0,0.15) 0%, transparent 35%, transparent 70%, rgba(0,0,0,0.35) 100%)',
+            pointerEvents: 'none',
+          }} />
+        )}
+        <div style={{ padding: '62px 16px 14px', position: 'relative' }}>
           <button onClick={onBack} style={{
             background: 'rgba(255,255,255,0.85)', border: 'none',
             width: 36, height: 36, borderRadius: '50%',
@@ -1032,6 +1051,13 @@ export function RecipeScreen({ onBack, onNav, selected, onPlanDaysUpdated, onMea
             </svg>
           </button>
         </div>
+        {photoCredit && (
+          <div style={{
+            position: 'absolute', bottom: 6, right: 10,
+            fontFamily: 'var(--mono)', fontSize: 9, color: 'rgba(255,255,255,0.8)',
+            textShadow: '0 1px 2px rgba(0,0,0,0.4)',
+          }}>{photoCredit}</div>
+        )}
       </div>
 
       <div style={{ background: 'var(--cream)', marginTop: -24, borderRadius: '24px 24px 0 0', padding: '20px 20px 160px', position: 'relative' }}>

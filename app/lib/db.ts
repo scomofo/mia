@@ -63,6 +63,8 @@ const SCHEMA_SQL = `
     meal_name TEXT NOT NULL,
     ingredients_json TEXT NOT NULL,
     steps_json TEXT NOT NULL,
+    photo_url TEXT,
+    photo_credit TEXT,
     created_at INTEGER,
     UNIQUE(plan_id, day_key, meal_idx)
   );
@@ -83,6 +85,8 @@ const SCHEMA_SQL = `
 `;
 sqlite.exec(SCHEMA_SQL);
 try { sqlite.exec("ALTER TABLE users ADD COLUMN raw_answers TEXT"); } catch { /* already exists */ }
+try { sqlite.exec("ALTER TABLE recipes ADD COLUMN photo_url TEXT"); } catch { /* already exists */ }
+try { sqlite.exec("ALTER TABLE recipes ADD COLUMN photo_credit TEXT"); } catch { /* already exists */ }
 
 export const db = drizzle(sqlite, { schema });
 export const USER_ID = "me";

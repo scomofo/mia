@@ -55,6 +55,8 @@ export const recipes = sqliteTable("recipes", {
   mealName: text("meal_name").notNull(),
   ingredientsJson: text("ingredients_json").notNull(),
   stepsJson: text("steps_json").notNull(),
+  photoUrl: text("photo_url"),
+  photoCredit: text("photo_credit"),
   createdAt: integer("created_at", { mode: "timestamp" }),
 });
 
