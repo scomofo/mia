@@ -633,6 +633,22 @@ export function GroceryScreen({ onBack, onNav }) {
   const [status, setStatus] = useState('loading'); // loading | empty | generating | ready | error
   const [store, setStore] = useState('rcss');
   const [sendOpen, setSendOpen] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const refreshDeals = async () => {
+    if (refreshing) return;
+    setRefreshing(true);
+    try {
+      const res = await fetch('/api/refresh-deals', { method: 'POST' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setState(data.categories.map(c => ({ ...c, items: c.items.map(i => ({ done: false, ...i })) })));
+    } catch (e) {
+      console.warn('refresh-deals failed:', e);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -763,16 +779,29 @@ export function GroceryScreen({ onBack, onNav }) {
             </div>
           </div>
 
-          <button onClick={() => window.open('https://www.pcoptimum.ca/load?page=RCSSDigitalCouponBoard20220929', '_blank')} style={{
-            width: '100%', marginTop: 10, background: 'transparent',
-            border: '1px dashed rgba(31,36,25,0.25)', borderRadius: 10,
-            padding: '9px 12px', cursor: 'pointer',
-            fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--ink-2)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-          }}>
-            <svg width="12" height="12" viewBox="0 0 12 12"><path d="M6 1v10M1 6h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
-            Load PC Optimum offers to your card
-          </button>
+          <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
+            <button onClick={() => window.open('https://www.pcoptimum.ca/load?page=RCSSDigitalCouponBoard20220929', '_blank')} style={{
+              flex: 1, background: 'transparent',
+              border: '1px dashed rgba(31,36,25,0.25)', borderRadius: 10,
+              padding: '9px 12px', cursor: 'pointer',
+              fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--ink-2)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+            }}>
+              <svg width="12" height="12" viewBox="0 0 12 12"><path d="M6 1v10M1 6h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
+              Load PC offers
+            </button>
+            <button onClick={refreshDeals} disabled={refreshing} style={{
+              flex: 1, background: 'transparent',
+              border: '1px dashed rgba(31,36,25,0.25)', borderRadius: 10,
+              padding: '9px 12px', cursor: refreshing ? 'wait' : 'pointer',
+              fontFamily: 'var(--sans)', fontSize: 12, color: 'var(--ink-2)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+              opacity: refreshing ? 0.6 : 1,
+            }}>
+              <svg width="12" height="12" viewBox="0 0 12 12"><path d="M3 6a3 3 0 1 1 6 0M9 3v3h-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none" /></svg>
+              {refreshing ? 'Refreshing…' : 'Refresh deals'}
+            </button>
+          </div>
         </div>
 
         {status === 'empty' && (
